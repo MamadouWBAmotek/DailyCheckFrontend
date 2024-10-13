@@ -1,0 +1,45 @@
+# Local files
+.DS_Store
+*.local
+*.log*
+
+# Distribution files and build output
+node_modules/
+dist/
+.vinxi/
+.output/
+.vercel/
+.netlify/
+.wrangler/
+
+# IDE and editor files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# macOS-specific files
+*.DS_Store
+
+# Vite cache (ajout)
+.vite/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# npm/Yarn/PNPM lock files (évite les conflits entre gestionnaires de paquets, si tu utilises l'un ou l'autre)
+yarn.lock
+pnpm-lock.yaml
+
+# Tests and coverage reports
+coverage/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+
+# Cache files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

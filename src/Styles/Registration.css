@@ -1,0 +1,99 @@
+/* Registration.css */
+
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f0f0f5; /* Couleur de fond douce */
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    background: white;
+    border-radius: 20px; /* Coins arrondis */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Ombre douce */
+    padding: 40px; /* Espacement interne */
+    min-width: 600px; /* Largeur maximale */
+    transition: max-width 0.3s ease; /* Transition douce pour la largeur */
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px; /* Espacement réduit sur les petits écrans */
+    }
+}
+
+h1 {
+    font-size: 28px; /* Taille de police augmentée */
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 30px; /* Espacement inférieur accru */
+}
+
+.label {
+    font-size: 18px; /* Taille de police augmentée pour les étiquettes */
+    margin-bottom: 10px; /* Espacement inférieur accru */
+}
+
+.iconInput {
+    display: flex;
+    position: relative;
+    margin-bottom: 30px; /* Espacement inférieur accru */
+}
+
+.iconInput input {
+    width: 100%;
+    padding: 12px; /* Espacement accru */
+    border: 1px solid #ccc;
+    border-radius: 12px; /* Coins arrondis */
+    font-size: 16px; /* Taille de police des champs de saisie */
+    transition: border-color 0.3s;
+}
+
+.iconInput input:focus {
+    border-color: #007aff; /* Couleur de la bordure au focus */
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 122, 255, 0.5); /* Ombre au focus */
+}
+
+.error {
+    color: red;
+    font-size: 14px; /* Taille de police augmentée pour les erreurs */
+    margin-top: 10px; /* Espacement supérieur */
+}
+
+.registerButton {
+    text-align: center;
+}
+
+.registerButton button {
+    background-color: #007aff; /* Couleur de fond du bouton */
+    color: white;
+    padding: 12px; /* Espacement accru */
+    border: none;
+    border-radius: 12px; /* Coins arrondis */
+    cursor: pointer;
+    font-size: 16px; /* Taille de police du bouton */
+    transition: background-color 0.3s;
+}
+
+.registerButton button:hover {
+    background-color: #005bb5; /* Couleur au survol */
+}
+
+.logindiv {
+    text-align: center;
+    margin-top: 30px; /* Espacement supérieur accru */
+}
+
+.logindiv a {
+    color: #007aff; /* Couleur du lien */
+    text-decoration: none;
+    font-size: 16px; /* Taille de police du lien */
+}
+
+.logindiv a:hover {
+    text-decoration: underline;
+}
