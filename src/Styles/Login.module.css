@@ -1,0 +1,136 @@
+/* LoginPage.css */
+
+/* Set global body styles */
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif; /* Font family for the page */
+    background-color: #f0f0f5; /* Soft background color */
+    margin: 0; /* Remove default margin */
+    display: flex; /* Use flexbox for centering */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    height: 100vh; /* Full viewport height */
+}
+
+/* Container for the login form */
+.container {
+    background: white; /* White background for the container */
+    border-radius: 20px; /* Rounded corners */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Soft shadow effect */
+    padding: 40px; /* Internal spacing */
+    min-width: 600px; /* Minimum width for the container */
+    transition: max-width 0.3s ease; /* Smooth transition for width changes */
+}
+
+/* Responsive styles for smaller screens */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px; /* Reduced padding for small screens */
+    }
+}
+
+/* Legend styling for the form title */
+legend {
+    font-size: 28px; /* Increased font size */
+    font-weight: bold; /* Bold text */
+    text-align: center; /* Center text */
+    margin-bottom: 30px; /* Increased bottom margin */
+}
+
+/* Label styling for input fields */
+.label {
+    font-size: 18px; /* Increased font size for labels */
+    margin-bottom: 10px; /* Increased bottom margin */
+}
+
+/* Styling for input fields with icons */
+.iconInput {
+    display: flex; /* Use flexbox for layout */
+    position: relative; /* Position relative for positioning child elements */
+    margin-bottom: 30px; /* Increased bottom margin */
+}
+
+/* Styling for input fields */
+.iconInput input {
+    width: 100%; /* Full width for input fields */
+    padding: 12px; /* Increased padding */
+    border: 1px solid #ccc; /* Light grey border */
+    border-radius: 12px; /* Rounded corners */
+    font-size: 16px; /* Font size for input fields */
+    transition: border-color 0.3s; /* Smooth transition for border color */
+}
+
+/* Input field focus styling */
+.iconInput input:focus {
+    border-color: #007aff; /* Border color when focused */
+    outline: none; /* Remove default outline */
+    box-shadow: 0 0 5px rgba(0, 122, 255, 0.5); /* Shadow effect on focus */
+}
+
+/* Error message styling */
+.text-danger {
+    color: red; /* Red color for error messages */
+    font-size: 14px; /* Increased font size for error messages */
+}
+
+/* Styling for the "Forgot Password?" link */
+.resetPasswordHelper {
+    display: block; /* Block display for layout */
+    text-align: right; /* Align text to the right */
+    color: #007aff; /* Link color */
+    margin-bottom: 30px; /* Increased bottom margin */
+    text-decoration: none; /* Remove underline from link */
+}
+
+/* Hover effect for the "Forgot Password?" link */
+.resetPasswordHelper:hover {
+    text-decoration: underline; /* Underline on hover */
+}
+
+/* Button container styling */
+.loginButton {
+    text-align: center; /* Center the button */
+}
+
+/* Styling for the login button */
+.loginButton input {
+    background-color: #007aff; /* Background color for the button */
+    color: white; /* Text color for the button */
+    padding: 12px; /* Increased padding */
+    border: none; /* Remove default border */
+    border-radius: 12px; /* Rounded corners for the button */
+    cursor: pointer; /* Change cursor to pointer */
+    font-size: 16px; /* Font size for the button */
+    transition: background-color 0.3s; /* Smooth transition for background color */
+}
+
+/* Hover effect for the login button */
+.loginButton input:hover {
+    background-color: #005bb5; /* Darker color on hover */
+}
+
+/* Google sign-in section styling */
+.googlesignindiv {
+    display: flex; /* Use flexbox for layout */
+    align-items: center; /* Align items center */
+    flex-direction: column; /* Stack items vertically */
+    text-align: center; /* Center text */
+    margin: 30px auto; /* Increased vertical margins and center horizontally */
+}
+
+/* Sign-up link section styling */
+.signupdiv {
+    text-align: center; /* Center text */
+    margin-top: 30px; /* Increased top margin */
+}
+
+/* Sign-up link styling */
+.signupdiv a {
+    color: #007aff; /* Link color */
+    text-decoration: none; /* Remove underline from link */
+    font-size: 16px; /* Font size for the link */
+}
+
+/* Hover effect for the sign-up link */
+.signupdiv a:hover {
+    text-decoration: underline; /* Underline on hover */
+}
