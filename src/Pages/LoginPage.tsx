@@ -7,12 +7,15 @@ import { jwtDecode } from 'jwt-decode';
 import { useAuth } from '../Components/Auth'; 
 import styles from '../Styles/Login.module.css'; // Importation du CSS Module
 
+
 const LoginPage: React.FC = () => {
     const [userNameOrEmail, setUserNameOrEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [error, setError] = useState<string | null>(null);
+
     const navigate = useNavigate();
-    const { setIsauth } = useAuth(); 
+
+    const { setIsauth } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
@@ -32,13 +35,32 @@ const LoginPage: React.FC = () => {
             });
 
             if (response.ok) {
-                navigate({ to: '/home' });
-            } else {
+
+                // Mettez à jour l'état d'authentification
+                setIsauth(true);
+
+                setTimeout(() => {
+                    navigate({ to: '/home' });
+
+                }, 0);
+
+            } else if (response.status == 400 && response.statusText == "User was not found") {
+                const errorData = await response.json();
+                setError(errorData.message || "User was not found");
+
+            }
+            else if (response.status === 400 && response.statusText == "Password is incorrect" || password.length <= 9) {
+                const errorData = await response.json();
+                setError(errorData.message || "Password is incorrect");
+            }
+            else {
                 const errorData = await response.json();
                 setError(errorData.message || "Unexpected error occurred.");
+
             }
         } catch (err) {
             setError('Network error. Please try again later.');
+
         }
     };
 
@@ -66,6 +88,7 @@ const LoginPage: React.FC = () => {
                     setTimeout(() => {
                         navigate({ to: '/home' });
                     }, 0);
+
                 } else {
                     const errorData = await response.json();
                     setError(errorData.message || "Something went wrong");

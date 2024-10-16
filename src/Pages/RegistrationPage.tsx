@@ -5,6 +5,7 @@ import { RegistrationViewModel } from '../Models/RegistrationViewModel';
 import { LoginWithGoogleViewModel } from '../Models/LoginWithGoogleViewModel';
 import { jwtDecode } from 'jwt-decode';
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
+import { useAuth } from '../Components/Auth';
 
 const RegistrationPage: React.FC = () => {
     const [userName, setUserName] = useState<string>('');
@@ -13,6 +14,8 @@ const RegistrationPage: React.FC = () => {
     const [confirmPassword, setConfirmPassword] = useState<string>('');
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate(); // TanStack for navigation
+    const { setIsauth } = useAuth();
+
 
     // Handle form submission with async arrow function
     const handleSubmit = async (e: React.FormEvent): Promise<void> => {
@@ -41,9 +44,19 @@ const RegistrationPage: React.FC = () => {
             });
 
             if (response.ok) {
+                setIsauth(true);
+                setTimeout(() => {
+                    navigate({ to: '/home' });
+                }, 0);
                 // Navigate to login page upon successful registration
+<<<<<<< HEAD
                 navigate({ to: '/login' });
             } else if (response.status === 400 || response.statusText === "Login! u already have an account") {
+=======
+
+            }
+            else if (response.status === 400 || response.statusText === "Login! u already have an account") {
+>>>>>>> origin/main
                 const result = await response.json();
                 setError(result.message || response.statusText);
             }
@@ -74,9 +87,12 @@ const RegistrationPage: React.FC = () => {
                 if (!response.ok) {
                     throw new Error('Something went wrong');
                 }
-
+                setIsauth(true);
+                setTimeout(() => {
+                    navigate({ to: '/home' });
+                }, 0);
                 // Redirect with TanStack, regardless of whether the user exists or not
-                navigate({ to: '/home' });
+
             } catch (error) {
                 setError('Error checking email. Please try again later.');
                 console.error('Error checking email:', error);
@@ -89,8 +105,7 @@ const RegistrationPage: React.FC = () => {
     return (
         <div className={styles.container}>
             <form onSubmit={handleSubmit}>
-                <legend>Register!</legend>
-
+                <legend className={styles.legend}>Register!</legend>
                 <label htmlFor="username"><b>Username:</b></label>
                 <div className={styles.iconInput}>
                     <i className="fa-solid fa-user fa-xl"></i>
@@ -150,7 +165,6 @@ const RegistrationPage: React.FC = () => {
             <GoogleOAuthProvider clientId='593303417165-qptsgopn542rv2vosle4e43n9oagq12k.apps.googleusercontent.com'>
                 <div className={styles.googlesignindiv}>
                     <p>Or</p>
-
                     <GoogleLogin onSuccess={handleGoogleLogin} />
                 </div>
             </GoogleOAuthProvider>

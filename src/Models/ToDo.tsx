@@ -4,7 +4,7 @@ export interface ToDo {
     id: number;
     title: string;
     description: string;
-    state: Status,
+    Status: Status;
     userId: number;
     deadline: Date;
 }

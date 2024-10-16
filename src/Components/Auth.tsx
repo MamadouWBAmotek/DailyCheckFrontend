@@ -6,7 +6,7 @@ const AuthContext = createContext<{ isauth: boolean; setIsauth: (value: boolean)
 // Provider pour le contexte
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [isauth, setIsauth] = useState<boolean>(false);
-    
+
     return (
         <AuthContext.Provider value={{ isauth, setIsauth }}>
             {children}

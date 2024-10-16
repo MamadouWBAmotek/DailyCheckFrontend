@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ToDo } from '../Models/ToDo';
 import { Status } from '../Models/Status';
-import styles from '../Styles/Home.module.css'; // Importing styles from CSS Modules
+import styles from './HomePage.module.css'; // Importing styles from CSS Modules
 import { Navigate } from '@tanstack/react-router';
 
 const HomePage: React.FC = () => {
@@ -21,7 +21,7 @@ const HomePage: React.FC = () => {
 
     // Fetch To-Dos with filtering by status
     const fetchTodos = async (status?: Status) => {
-        let url = 'http://localhost:5000/api/todo/todos';
+        let url = 'http://localhost:5144/api/todo/todos';
         if (status) {
             url += `?status=${status}`;
         }
@@ -42,7 +42,7 @@ const HomePage: React.FC = () => {
     };
     const handleLogout = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/login/logout', {
+            const response = await fetch('http://localhost:5144/api/login/logout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -65,7 +65,7 @@ const HomePage: React.FC = () => {
     // Create a new To-Do
     const handleCreateTodo = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/todo/create', {
+            const response = await fetch('http://localhost:5144/api/todo/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

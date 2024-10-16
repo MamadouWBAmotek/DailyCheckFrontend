@@ -36,21 +36,8 @@ function RootComponent() {
             }}
           >
           </Link>
-          <Link
-            to="/users"
-            activeProps={{
-              className: 'font-bold',
-            }}
-          >
-
-          </Link>
-          <Link
-            to="/users"
-            activeProps={{
-              className: 'font-bold',
-            }}
-          >
-          </Link>
+         
+        
         </div>
       )}
       <Outlet />
