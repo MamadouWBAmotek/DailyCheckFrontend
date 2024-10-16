@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router'; // Use TanStack for navigation
-import '../Styles/Registration.css';
+import styles from '../Styles/Registration.module.css'; // Import CSS module
 import { RegistrationViewModel } from '../Models/RegistrationViewModel';
 import { LoginWithGoogleViewModel } from '../Models/LoginWithGoogleViewModel';
 import { jwtDecode } from 'jwt-decode';
@@ -32,7 +32,7 @@ const RegistrationPage: React.FC = () => {
         };
 
         try {
-            const response = await fetch('http://localhost:5144/api/login/register', {
+            const response = await fetch('http://localhost:5000/api/login/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -43,8 +43,7 @@ const RegistrationPage: React.FC = () => {
             if (response.ok) {
                 // Navigate to login page upon successful registration
                 navigate({ to: '/login' });
-            }
-            else if (response.status == 400 || response.statusText == "Login! u already have an account") {
+            } else if (response.status === 400 || response.statusText === "Login! u already have an account") {
                 const result = await response.json();
                 setError(result.message || response.statusText);
             }
@@ -52,6 +51,7 @@ const RegistrationPage: React.FC = () => {
             setError('An unexpected error occurred. Please try again later.');
         }
     };
+
     const handleGoogleLogin = async (credentialResponse: any): Promise<void> => {
         if (credentialResponse.credential) {
             const googleOAuthResponse = jwtDecode<any>(credentialResponse.credential);
@@ -63,7 +63,7 @@ const RegistrationPage: React.FC = () => {
             };
 
             try {
-                const response = await fetch('http://localhost:5144/api/login/loginwithgoogle', {
+                const response = await fetch('http://localhost:5000/api/login/loginwithgoogle', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -87,12 +87,12 @@ const RegistrationPage: React.FC = () => {
     };
 
     return (
-        <div className="container">
+        <div className={styles.container}>
             <form onSubmit={handleSubmit}>
                 <legend>Register!</legend>
 
                 <label htmlFor="username"><b>Username:</b></label>
-                <div className="iconInput">
+                <div className={styles.iconInput}>
                     <i className="fa-solid fa-user fa-xl"></i>
                     <input
                         type="text"
@@ -105,7 +105,7 @@ const RegistrationPage: React.FC = () => {
                 </div>
 
                 <label htmlFor="email"><b>Email:</b></label>
-                <div className="iconInput">
+                <div className={styles.iconInput}>
                     <i className="fa-solid fa-envelope fa-xl"></i>
                     <input
                         type="email"
@@ -117,7 +117,7 @@ const RegistrationPage: React.FC = () => {
                 </div>
 
                 <label htmlFor="password"><b>Password:</b></label>
-                <div className="iconInput">
+                <div className={styles.iconInput}>
                     <i className="fa-solid fa-lock fa-xl"></i>
                     <input
                         type="password"
@@ -129,7 +129,7 @@ const RegistrationPage: React.FC = () => {
                 </div>
 
                 <label htmlFor="confirmPassword"><b>Confirm Password:</b></label>
-                <div className="iconInput">
+                <div className={styles.iconInput}>
                     <i className="fa-solid fa-lock fa-xl"></i>
                     <input
                         type="password"
@@ -140,22 +140,22 @@ const RegistrationPage: React.FC = () => {
                     />
                 </div>
 
-                <div className="registerButton">
+                <div className={styles.registerButton}>
                     <button type="submit">Sign Up</button>
                 </div>
 
-                {error && <p className="error">{error}</p>}
+                {error && <p className={styles.error}>{error}</p>}
             </form>
 
             <GoogleOAuthProvider clientId='593303417165-qptsgopn542rv2vosle4e43n9oagq12k.apps.googleusercontent.com'>
-                <div className="googlesignindiv">
+                <div className={styles.googlesignindiv}>
                     <p>Or</p>
 
                     <GoogleLogin onSuccess={handleGoogleLogin} />
                 </div>
             </GoogleOAuthProvider>
 
-            <div className="logindiv">
+            <div className={styles.logindiv}>
                 <p>Already have an account?</p>
                 <Link to="/login">LOGIN</Link>
             </div>

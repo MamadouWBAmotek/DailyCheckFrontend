@@ -1,0 +1,97 @@
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f0f0f5; /* Soft background color */
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    background: white;
+    border-radius: 20px; /* Rounded corners */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    padding: 40px; /* Inner spacing */
+    min-width: 600px; /* Minimum width */
+    transition: max-width 0.3s ease; /* Smooth width transition */
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px; /* Reduced padding on smaller screens */
+    }
+}
+
+h1 {
+    font-size: 28px; /* Increased font size */
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 30px; /* Increased bottom spacing */
+}
+
+.label {
+    font-size: 18px; /* Increased font size for labels */
+    margin-bottom: 10px; /* Increased bottom spacing */
+}
+
+.iconInput {
+    display: flex;
+    position: relative;
+    margin-bottom: 30px; /* Increased bottom spacing */
+}
+
+.iconInput input {
+    width: 100%;
+    padding: 12px; /* Increased padding */
+    border: 1px solid #ccc;
+    border-radius: 12px; /* Rounded corners */
+    font-size: 16px; /* Font size for input fields */
+    transition: border-color 0.3s;
+}
+
+.iconInput input:focus {
+    border-color: #007aff; /* Border color on focus */
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 122, 255, 0.5); /* Shadow on focus */
+}
+
+.error {
+    color: red;
+    font-size: 14px; /* Increased font size for errors */
+    margin-top: 10px; /* Top spacing */
+}
+
+.registerButton {
+    text-align: center;
+}
+
+.registerButton button {
+    background-color: #007aff; /* Background color of the button */
+    color: white;
+    padding: 12px; /* Increased padding */
+    border: none;
+    border-radius: 12px; /* Rounded corners */
+    cursor: pointer;
+    font-size: 16px; /* Font size of the button */
+    transition: background-color 0.3s;
+}
+
+.registerButton button:hover {
+    background-color: #005bb5; /* Color on hover */
+}
+
+.logindiv {
+    text-align: center;
+    margin-top: 30px; /* Increased top spacing */
+}
+
+.logindiv a {
+    color: #007aff; /* Link color */
+    text-decoration: none;
+    font-size: 16px; /* Font size of the link */
+}
+
+.logindiv a:hover {
+    text-decoration: underline;
+}

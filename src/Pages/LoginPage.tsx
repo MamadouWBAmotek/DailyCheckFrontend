@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import { LoginViewModel } from '../Models/LoginViewModel';
 import { LoginWithGoogleViewModel } from '../Models/LoginWithGoogleViewModel';
-import '../Styles/Login.css';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
-import { useAuth } from '../Components/Auth'; // Importez useAuth
+import { useAuth } from '../Components/Auth'; 
+import styles from '../Styles/Login.module.css'; // Importation du CSS Module
 
 const LoginPage: React.FC = () => {
     const [userNameOrEmail, setUserNameOrEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
-    const { setIsauth } = useAuth(); // 
+    const { setIsauth } = useAuth(); 
 
     const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
@@ -23,7 +23,7 @@ const LoginPage: React.FC = () => {
         };
 
         try {
-            const response = await fetch('http://localhost:5144/api/login/login', {
+            const response = await fetch('http://localhost:5000/api/login/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -32,20 +32,18 @@ const LoginPage: React.FC = () => {
             });
 
             if (response.ok) {
-                navigate({ to: '/home' }); // Mettez à jour l'état d'authentification
+                navigate({ to: '/home' });
             } else {
                 const errorData = await response.json();
-                setError(errorData.message || "Unexpected error occurred."); // Affichez un message d'erreur pertinent
+                setError(errorData.message || "Unexpected error occurred.");
             }
         } catch (err) {
-            setError('Network error. Please try again later.'); // Affichez une erreur réseau
+            setError('Network error. Please try again later.');
         }
     };
 
     const handleGoogleLogin = async (credentialResponse: any): Promise<void> => {
-
         if (credentialResponse.credential) {
-
             const googleOAuthResponse = jwtDecode<any>(credentialResponse.credential);
 
             const googleOautData: LoginWithGoogleViewModel = {
@@ -55,7 +53,7 @@ const LoginPage: React.FC = () => {
             };
 
             try {
-                const response = await fetch('http://localhost:5144/api/login/loginwithgoogle', {
+                const response = await fetch('http://localhost:5000/api/login/loginwithgoogle', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -64,44 +62,43 @@ const LoginPage: React.FC = () => {
                 });
 
                 if (response.ok) {
-                    setIsauth(true); // Mettez à jour l'état d'authentification
+                    setIsauth(true);
                     setTimeout(() => {
                         navigate({ to: '/home' });
                     }, 0);
                 } else {
                     const errorData = await response.json();
-                    setError(errorData.message || "Something went wrong"); // Affichez un message d'erreur pertinent
+                    setError(errorData.message || "Something went wrong");
                 }
             } catch (error) {
-                setError('Error checking email. Please try again later.'); // Affichez une erreur réseau
+                setError('Error checking email. Please try again later.');
             }
         } else {
-            setError('No credential provided. Please try again.'); // Gérer les erreurs de credential
+            setError('No credential provided. Please try again.');
         }
-
     };
 
     return (
-        <div className="container">
+        <div className={styles.container}>
             <form onSubmit={handleSubmit} id="form">
-                <legend>Login!</legend>
+                <legend className={styles.legend}>Login!</legend>
 
-                <label htmlFor="username"><b>Username Or Email:</b></label>
-                <div className="iconInput">
+                <label htmlFor="username" className={styles.label}><b>Username Or Email:</b></label>
+                <div className={styles.iconInput}>
                     <input
                         type="text"
                         value={userNameOrEmail}
                         onChange={(e) => setUserNameOrEmail(e.target.value)}
-                        className="username"
+                        className={styles.username}
                         placeholder="Username or email"
                         required
                         autoFocus
                     />
-                    {error && <span className="text-danger">{error}</span>}
+                    {error && <span className={styles.textDanger}>{error}</span>}
                 </div>
 
-                <label htmlFor="password"><b>Password:</b></label>
-                <div className="iconInput">
+                <label htmlFor="password" className={styles.label}><b>Password:</b></label>
+                <div className={styles.iconInput}>
                     <input
                         type="password"
                         value={password}
@@ -110,24 +107,24 @@ const LoginPage: React.FC = () => {
                         placeholder="Password"
                         required
                     />
-                    {error && <span className="text-danger">{error}</span>}
+                    {error && <span className={styles.textDanger}>{error}</span>}
                 </div>
 
-                <a className="resetPasswordHelper" href="/">Forgot password?</a>
+                <a className={styles.resetPasswordHelper} href="/">Forgot password?</a>
 
-                <div className="loginButton">
+                <div className={styles.loginButton}>
                     <input type="submit" value="Login" />
                 </div>
             </form>
 
-            <GoogleOAuthProvider clientId='593303417165-qptsgopn542rv2vosle4e43n9oagq12k.apps.googleusercontent.com'> {/* Remplacez par votre client ID */}
-                <div className="googlesignindiv">
+            <GoogleOAuthProvider clientId='593303417165-qptsgopn542rv2vosle4e43n9oagq12k.apps.googleusercontent.com'>
+                <div className={styles.googlesignindiv}>
                     <p>Or</p>
                     <GoogleLogin onSuccess={handleGoogleLogin} />
                 </div>
             </GoogleOAuthProvider>
 
-            <div className="signupdiv">
+            <div className={styles.signupdiv}>
                 <p>You don't have an account yet?</p>
                 <Link to="/registration">SIGN UP</Link>
             </div>
