@@ -35,7 +35,7 @@ const RegistrationPage: React.FC = () => {
         };
 
         try {
-            const response = await fetch('http://localhost:5000/api/login/register', {
+            const response = await fetch('http://localhost:5144/api/login/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -49,14 +49,9 @@ const RegistrationPage: React.FC = () => {
                     navigate({ to: '/home' });
                 }, 0);
                 // Navigate to login page upon successful registration
-<<<<<<< HEAD
                 navigate({ to: '/login' });
             } else if (response.status === 400 || response.statusText === "Login! u already have an account") {
-=======
 
-            }
-            else if (response.status === 400 || response.statusText === "Login! u already have an account") {
->>>>>>> origin/main
                 const result = await response.json();
                 setError(result.message || response.statusText);
             }
@@ -76,7 +71,7 @@ const RegistrationPage: React.FC = () => {
             };
 
             try {
-                const response = await fetch('http://localhost:5000/api/login/loginwithgoogle', {
+                const response = await fetch('http://localhost:5144/api/login/loginwithgoogle', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

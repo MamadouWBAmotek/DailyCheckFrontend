@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { LoginViewModel } from '../Models/LoginViewModel';
 import { LoginWithGoogleViewModel } from '../Models/LoginWithGoogleViewModel';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
-import { useAuth } from '../Components/Auth'; 
+import { useAuth } from '../Components/Auth';
 import styles from '../Styles/Login.module.css'; // Importation du CSS Module
 
 
@@ -14,8 +14,16 @@ const LoginPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
 
     const navigate = useNavigate();
-
     const { setIsauth } = useAuth();
+    const { setUser } = useAuth();
+    const { user } = useAuth();
+
+    useEffect(() => {
+        if (user) {
+            console.log("the user", user); // Affiche l'utilisateur lorsque l'état change
+        }
+    }, [user]);
+
 
     const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
@@ -26,20 +34,22 @@ const LoginPage: React.FC = () => {
         };
 
         try {
-            const response = await fetch('http://localhost:5000/api/login/login', {
+            const response = await fetch('http://localhost:5144/api/login/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(model),
             });
+            const data = await response.json();
 
             if (response.ok) {
 
                 // Mettez à jour l'état d'authentification
-                setIsauth(true);
-
+                setUser(data.user)
                 setTimeout(() => {
+
+                    setIsauth(true);
                     navigate({ to: '/home' });
 
                 }, 0);
@@ -75,17 +85,25 @@ const LoginPage: React.FC = () => {
             };
 
             try {
-                const response = await fetch('http://localhost:5000/api/login/loginwithgoogle', {
+                const response = await fetch('http://localhost:5144/api/login/loginwithgoogle', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify(googleOautData),
                 });
+                const data = await response.json();
 
                 if (response.ok) {
-                    setIsauth(true);
+
                     setTimeout(() => {
+                        setUser(data.user);
+                    }, 3000);
+
+                    setIsauth(true);
+                    // Mettez à jour l'utilisateur ici
+                    setTimeout(() => {
+
                         navigate({ to: '/home' });
                     }, 0);
 

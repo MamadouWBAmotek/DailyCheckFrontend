@@ -3,8 +3,9 @@ import { Status } from "./Status";
 
 export interface ToDoViewModel {
     Title: string,
-    Description: string
-    Deadline: string
-    Status?: Status;
+    Description: string,
+    UserId?: string,
+    Deadline: string,
+    // Status: Status;
 
 }
