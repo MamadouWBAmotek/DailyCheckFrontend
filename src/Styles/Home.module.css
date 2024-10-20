@@ -2,21 +2,28 @@
 .homepage {
     display: flex;
     flex-direction: column;
-    height: 100vh; /* Hauteur pleine */
-    width: 100vw; /* Largeur pleine */
-    background-color: #f4f6f9; /* Arrière-plan clair */
+    height: 100vh;
+    /* Hauteur pleine */
+    width: 100vw;
+    /* Largeur pleine */
+    background-color: #f4f6f9;
+    /* Arrière-plan clair */
 }
 
 /* En-tête */
 .header {
     display: flex;
-    justify-content: space-between; /* Espacer uniformément les boutons */
+    justify-content: space-between;
+    /* Espacer uniformément les boutons */
     align-items: center;
-    background-color: #007aff; /* Bleu pour l'en-tête */
+    background-color: #007aff;
+    /* Bleu pour l'en-tête */
     color: white;
     padding: 10px 20px;
-    height: 60px; /* Hauteur fixe de l'en-tête */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Ombre subtile */
+    height: 60px;
+    /* Hauteur fixe de l'en-tête */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    /* Ombre subtile */
 }
 
 .header button {
@@ -32,24 +39,29 @@
 
 .header button:hover {
     background-color: #005bb5;
-    transform: scale(1.05); /* Léger zoom sur hover */
+    transform: scale(1.05);
+    /* Léger zoom sur hover */
 }
 
 /* Conteneur principal pour la barre latérale et le contenu */
 .main-container {
     display: flex;
     flex: 1;
-    overflow: hidden; /* Gérer les débordements */
+    overflow: hidden;
+    /* Gérer les débordements */
 }
 
 /* Barre latérale */
 .sidebar {
-    width: 250px; /* Largeur fixe de la barre latérale */
+    width: 250px;
+    /* Largeur fixe de la barre latérale */
     background-color: #2c3e50;
     color: white;
     padding: 20px;
-    height: calc(100vh - 60px); /* Hauteur complète moins l'en-tête */
-    overflow-y: auto; /* Scroll si trop de contenu */
+    height: calc(100vh - 60px);
+    /* Hauteur complète moins l'en-tête */
+    overflow-y: auto;
+    /* Scroll si trop de contenu */
 }
 
 .sidebar h3 {
@@ -68,15 +80,18 @@
 
 .sidebar li:hover {
     background-color: #1abc9c;
-    transform: scale(1.05); /* Zoom léger */
+    transform: scale(1.05);
+    /* Zoom léger */
 }
 
 /* Contenu principal */
 .main-content {
     flex: 1;
     padding: 20px;
-    overflow-y: auto; /* Permet le défilement si nécessaire */
-    background-color: #ecf0f1; /* Arrière-plan clair */
+    overflow-y: auto;
+    /* Permet le défilement si nécessaire */
+    background-color: #ecf0f1;
+    /* Arrière-plan clair */
 }
 
 /* Indicateur de chargement et messages */
@@ -113,28 +128,42 @@
     align-items: center;
 }
 
+.close {
+    font-size: 24px;
+}
+
+.close:hover {
+    cursor: pointer;
+}
+
 .modal-content {
     padding: 20px;
     border-radius: 12px;
     background-color: white;
-    width: 400px; /* Ajustement de la largeur pour un meilleur look */
+    width: 400px;
+    /* Ajustement de la largeur pour un meilleur look */
     display: flex;
     flex-direction: column;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .modal-content input {
-    margin-top: 15px; /* Espace entre les champs */
+    margin-top: 15px;
+    /* Espace entre les champs */
     padding: 12px;
     border-radius: 8px;
-    border: 1px solid #bdc3c7; /* Bordure gris clair */
+    border: 1px solid #bdc3c7;
+    /* Bordure gris clair */
     transition: border-color 0.3s ease;
-    width: 100%; /* Prend toute la largeur */
+    width: 100%;
+    /* Prend toute la largeur */
 }
 
 .modal-content input:focus {
-    border-color: #007aff; /* Changement de couleur de bordure lors du focus */
-    outline: none; /* Supprime l'outline par défaut */
+    border-color: #007aff;
+    /* Changement de couleur de bordure lors du focus */
+    outline: none;
+    /* Supprime l'outline par défaut */
 }
 
 .modal-content button {
@@ -148,25 +177,57 @@
 }
 
 .modal-content button:hover {
-    background-color: #005bb5; /* Couleur du bouton au hover */
+    background-color: #005bb5;
+    /* Couleur du bouton au hover */
+}
+
+.button-container {
+    display:flex;
+    flex-direction: row;
+    justify-content: space-between;
 }
 
 /* Style pour la liste des To-Dos */
 .todo-list {
-    list-style-type: none; /* Supprime les puces de la liste */
-    padding: 0; /* Enlève le padding par défaut */
+    list-style-type: none;
+    /* Supprime les puces de la liste */
+    padding: 0;
+    /* Enlève le padding par défaut */
+    display: flex;
+    flex-direction: column;
 }
+
 
 .todo-list li {
-    margin: 15px 0; /* Espacement entre les To-Dos */
-    padding: 10px; /* Espace à l'intérieur de chaque To-Do */
-    background-color: #fff; /* Couleur de fond blanche */
-    border: 1px solid #bdc3c7; /* Bordure gris clair */
-    border-radius: 5px; /* Coins arrondis */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Ombre légère */
+    margin: 15px 0;
+    /* Espacement entre les To-Dos */
+    padding: 10px;
+    /* Espace à l'intérieur de chaque To-Do */
+    background-color: #d1cece;
+    /* Couleur de fond blanche */
+    border: 1px solid #bdc3c7;
+    /* Bordure gris clair */
+    border-radius: 5px;
+    /* Coins arrondis */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    /* Ombre légère */
+    width: 100;
+    display: flex;
+    justify-content: center;
+
 }
 
+.todo-list button {
+    width: 100%;
+    /* Couleur de fond blanche */
+
+}
+
+
+
 .todo-list h3 {
-    margin: 0; /* Enlève la marge par défaut */
-    font-size: 1.2rem; /* Taille de police pour le titre */
+    margin: 0;
+    /* Enlève la marge par défaut */
+    font-size: 1.2rem;
+    /* Taille de police pour le titre */
 }

@@ -8,6 +8,9 @@ import { ToDoViewModel } from '../Models/ToDoViewModel';
 const HomePage: React.FC = () => {
     const [todos, setTodos] = useState<ToDo[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isToDoModalOpen, setIsToDoModalOpen] = useState(false);
+    const [selectedTodo, setSelectedTodo] = useState<ToDo | null>(null);
+    const [isEditing, setIsEditing] = useState<boolean>(false);
     const [title, setTitle] = useState<string>('');
     const [description, setDescription] = useState<string>('');
     const [deadline, setDeadline] = useState<string>('');
@@ -134,13 +137,20 @@ const HomePage: React.FC = () => {
             setIsLoading(false); // Fin du chargement
         }
     };
-
+    // Fermer le modal
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setTitle('');
+        setDescription('');
+        setDeadline('');
+        setError(null);
+        setSuccess(null);
+    };
     // Gestion de la création d'un nouveau To-Do
     const handleCreateTodo = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
         if (!title || !description || !deadline) {
             setError('Please fill in all fields');
-            return;
         }
 
         const formattedDeadline = new Date(deadline).toISOString();
@@ -159,13 +169,126 @@ const HomePage: React.FC = () => {
             });
 
             if (response.ok) {
-                const result = await response.json();
-                setSuccess(`To-Do "${result.title}" created successfully!`);
-                fetchTodos(); // Rafraîchit la liste des To-Dos
                 closeModal(); // Ferme le modal après la création
+                const data = await response.json();
+                setSuccess(`To-Do "${data.todo.title}" created successfully!`);
+                fetchTodos(); // Rafraîchit la liste des To-Dos
             } else {
                 const errorData = await response.json();
                 setError(errorData.message || 'Failed to create To-Do');
+            }
+        } catch (error) {
+            if (error instanceof Error) {
+                setError(`Error: ${error.message}`);
+            } else {
+                setError('Unknown error occurred.');
+            }
+        }
+    };
+    const ShowTodoDetails = (todo: ToDo) => {
+        setSelectedTodo(todo); // Définit le To-Do sélectionné
+        console.log(todo)
+        setIsEditing(false);
+        setIsToDoModalOpen(true); // Ouvre le modal
+    };
+
+    const closeToDoModal = () => {
+        setIsToDoModalOpen(false);
+
+    };
+    const handleEditTodo = (todoId: number) => {
+        // setSelectedTodo(todo); // Définit le To-Do sélectionné
+        // setIsToDoModalOpen(true); // Ouvre le modal
+    };
+    const handleDeleteTodo = async (todo: ToDo) => {
+        if (!todo) return; // Vérifie si un To-Do est bien sélectionné
+
+        const confirmDelete = window.confirm(`Are you sure you want to delete the To-Do "${todo.title}"?`);
+        if (!confirmDelete) return; // Si l'utilisateur annule la suppression, on arrête ici
+
+        try {
+            const response = await fetch('http://localhost:5144/api/todo/delete', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(todo), // Envoie le To-Do complet dans le corps de la requête
+            });
+
+            if (response.ok) {
+                setSuccess(`To-Do "${todo.title}" deleted successfully!`); // Message de succès
+                fetchTodos(); // Rafraîchit la liste des To-Dos après suppression
+                closeToDoModal(); // Ferme le modal après la suppression
+            } else {
+                const errorData = await response.json();
+                setError(errorData.message || 'Failed to delete To-Do'); // Message d'erreur personnalisé
+            }
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                setError(`Error: ${error.message}`); // Gère les erreurs connues
+            } else {
+                setError('Unknown error occurred while deleting the To-Do.'); // Gère les erreurs inconnues
+            }
+        }
+    };
+
+    const handleCancelTodo = async (todo: ToDo) => {
+        const confirmCancel = window.confirm('Are you sure you want to cancel this To-Do?');
+        if (!confirmCancel) return;
+
+        setIsLoading(true); // Indicateur de chargement
+
+        try {
+            const response = await fetch(`http://localhost:5144/api/todo/cancel`, {
+                method: 'PATCH', // Utilisation de PATCH pour modifier l'état du To-Do
+                headers: { 'Content-Type': 'application/json' },
+            });
+
+            if (response.ok) {
+                setSuccess('To-Do cancelled successfully!');
+                fetchTodos(); // Rafraîchit la liste des To-Dos
+            } else {
+                const errorData = await response.json();
+                setError(errorData.message || 'Failed to cancel To-Do');
+            }
+        } catch (error) {
+            setError('Error cancelling To-Do.');
+            console.error(error);
+        } finally {
+            setIsLoading(false); // Fin du chargement
+        }
+    };
+    const handleUpdateTodo = async (todo: ToDo) => {
+        if (!todo) return; // Si aucun To-Do sélectionné, ne rien faire
+        const formattedDeadline = new Date(todo.deadline).toISOString();
+
+        const updatedModel: ToDo = {
+            id: todo.id,
+            title: todo.title,
+            description: todo.description,
+            userId: user?.id.toString() || '', // Utilise l'ID utilisateur à partir du contexte
+            deadline: formattedDeadline,
+            Status: todo.Status // Formatte la date
+        };
+
+        try {
+            const response = await fetch('http://localhost:5144/api/todo/update', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedModel),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                setSuccess(`To-Do "${updatedModel.title}" updated successfully!`);
+                fetchTodos(); // Rafraîchit la liste des To-Dos après mise à jour
+                closeToDoModal(); // Ferme le modal après la mise à jour
+                console.log("model closed");
+            } else {
+                const errorData = await response.json();
+                setError(errorData.message || 'Failed to update To-Do');
             }
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -176,15 +299,7 @@ const HomePage: React.FC = () => {
         }
     };
 
-    // Fermer le modal
-    const closeModal = () => {
-        setIsModalOpen(false);
-        setTitle('');
-        setDescription('');
-        setDeadline('');
-        setError(null);
-        setSuccess(null);
-    };
+
 
     return (
         <div className={styles.homepage}>
@@ -218,12 +333,76 @@ const HomePage: React.FC = () => {
                     <ul className={styles['todo-list']}>
                         {todos.map((todo) => (
                             <li key={todo.id}>
-                                <h3>{todo.title}</h3>
-                                <p>{todo.description}</p>
-                                <p>{new Date(todo.deadline).toLocaleString()}</p>
+                                <button className={styles['todo-item']} onClick={() => ShowTodoDetails(todo)}>
+                                    <div className={styles['todoitem-content']}> {/* Utilisation du style du modal */}
+                                        <h3>{todo.title}</h3>
+                                        <p>{todo.description}</p>
+                                        <p>{new Date(todo.deadline).toLocaleString()}</p>
+                                    </div>
+                                </button>
                             </li>
                         ))}
                     </ul>
+                    {isToDoModalOpen && selectedTodo && ( // Vérifie si le modal est ouvert et si un To-Do est sélectionné
+                        <div className={styles.modal}>
+                            <div className={styles['modal-content']}>
+                                <span className={styles.close} onClick={closeToDoModal}>&times;</span>
+                                <form>
+                                    <h3>{isEditing ? 'Edit To-Do' : 'To-Do Details'}</h3>
+                                    <input
+                                        type="text"
+                                        placeholder="Title"
+                                        value={selectedTodo?.title || ''} // Utilise le titre du To-Do sélectionné
+                                        onChange={(e) => {
+                                            if (selectedTodo) {
+                                                setSelectedTodo({ ...selectedTodo, title: e.target.value }); // Met à jour le titre du To-Do sélectionné
+                                            }
+                                        }}
+                                        required
+                                        disabled={!isEditing}
+                                        autoFocus={isEditing} />
+                                    <input
+                                        type="text"
+                                        placeholder="Description"
+                                        value={selectedTodo.description}
+                                        onChange={(e) => {
+                                            if (selectedTodo) {
+                                                setSelectedTodo({ ...selectedTodo, description: e.target.value }); // Met à jour la description du To-Do sélectionné
+                                            }
+                                        }}
+                                        required
+                                        disabled={!isEditing} />
+                                    <input
+                                        type="datetime-local"
+                                        value={new Date(selectedTodo.deadline).toISOString().slice(0, 16)} // Format YYYY-MM-DDTHH:MM
+                                        onChange={(e) => {
+                                            if (selectedTodo) {
+                                                setSelectedTodo({ ...selectedTodo, deadline: e.target.value });
+                                            }
+                                        }}
+                                    />
+
+
+                                    {/* Boutons pour Edit, Cancel et Delete */}
+                                    <div className={styles['button-container']}>
+                                        {isEditing ? (
+                                            <>
+                                                <button type="button" onClick={() => handleUpdateTodo(selectedTodo)}>Save</button>
+                                                <button type="button" onClick={() => setIsEditing(false)}>Cancel</button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <button type="button" onClick={() => setIsEditing(true)}>Edit Todo</button>
+                                                <button type="button" onClick={() => handleDeleteTodo(selectedTodo)}>Delete Todo</button>
+                                                <button type="button" onClick={() => handleCancelTodo(selectedTodo)}>Cancel Todo</button>
+
+                                            </>
+                                        )}
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Modal pour créer un nouveau To-Do */}
                     {isModalOpen && (

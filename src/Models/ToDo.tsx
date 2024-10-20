@@ -5,6 +5,6 @@ export interface ToDo {
     title: string;
     description: string;
     Status: Status;
-    userId: number;
-    deadline: Date;
+    userId: string;
+    deadline: string;
 }
