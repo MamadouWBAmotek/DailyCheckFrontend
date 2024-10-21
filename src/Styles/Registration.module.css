@@ -1,26 +1,15 @@
 /* Registration.module.css */
 
 /* Set global body styles */
-body {
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-    /* Font family for the page */
-    background-color: #f0f0f5;
-    /* Soft background color */
-    margin: 0;
-    /* Remove default margin */
-    display: flex;
-    /* Use flexbox for centering */
-    justify-content: center;
-    /* Center horizontally */
-    align-items: center;
-    /* Center vertically */
-    height: 100%;
-    /* Full height */
-}
+
 
 /* Container for the registration form */
 .container {
-    background: white;
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    margin: auto;
+    background: #F0F0F5;
     /* White background for the container */
     border-radius: 20px;
     /* Rounded corners */

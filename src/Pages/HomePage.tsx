@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ToDo } from '../Models/ToDo';
 import { Status } from '../Models/Status';
 import styles from '../Styles/Home.module.css'; // Importation des styles CSS Modules
@@ -7,6 +7,8 @@ import { ToDoViewModel } from '../Models/ToDoViewModel';
 
 const HomePage: React.FC = () => {
     const [todos, setTodos] = useState<ToDo[]>([]);
+    const [sortToDos, setSortToDos] = useState<string>('');
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isToDoModalOpen, setIsToDoModalOpen] = useState(false);
     const [selectedTodo, setSelectedTodo] = useState<ToDo | null>(null);
@@ -15,17 +17,28 @@ const HomePage: React.FC = () => {
     const [description, setDescription] = useState<string>('');
     const [deadline, setDeadline] = useState<string>('');
     const [status, setStatus] = useState<Status>(Status.Upcoming);
+    const [isCancelled, setIsCancelled] = useState(false);
+    const [isDone, setIsDone] = useState(false);
+
+
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false); // Ajout d'un indicateur de chargement
     const { user } = useAuth();
+    const inputRef = useRef<HTMLInputElement>(null);
+
+
 
     useEffect(() => {
         fetchTodos(); // Appel initial pour récupérer les To-Dos
     }, []);
 
+
     // Fonction pour récupérer les To-Dos avec un filtre par statut
     const fetchTodos = async () => {
+        setSortToDos('');
+        setIsDone(false);
+        setIsCancelled(false);
         setIsLoading(true); // Commence le chargement
 
         try {
@@ -36,7 +49,8 @@ const HomePage: React.FC = () => {
                 throw new Error("No To-Dos found.")
                 console.error(error);
             }
-            setTodos(data.todos);
+            setTodos(data.todos)
+
             setError(null); // Réinitialisation des erreurs
         } catch (error) {
             setError('Error fetching To-Dos.');
@@ -46,12 +60,7 @@ const HomePage: React.FC = () => {
         }
     };
 
-    // Fonction pour filtrer les To-Dos par statut
-    // const filterByStatus = (status: Status) => {
-    //     fetchTodos(status);
-    // };
 
-    // Gestion de la déconnexion
     const handleLogout = async () => {
         try {
             const response = await fetch('http://localhost:5144/api/login/logout', {
@@ -71,59 +80,75 @@ const HomePage: React.FC = () => {
     };
 
     const fetchUpcomingTodos = async () => {
+        setSortToDos("Upcoming");
         setIsLoading(true);
+        setIsDone(false);
+        setIsCancelled(false)
         try {
             const response = await fetch('http://localhost:5144/api/todo/todos/upcoming');
             const data = await response.json();
 
             if (response.status === 404 && data.message == "No upcoming To-Dos found.") {
 
-                setError("No upcoming To-Dos found.");;
-                throw new Error("No upcoming To-Dos found.")
+                setError("No upcoming To-Dos found.");
+                setTodos(data.todos);
                 console.error(error);
+                throw new Error("No upcoming To-Dos found.")
+
 
             }
             setTodos(data.todos);
+
             setError(null); // Réinitialisation des erreurs
         } catch (error) {
-            setError('Error fetching upcoming To-Dos.');
+            // setError('Error fetching cancelled To-Dos.');
             console.error(error);
         } finally {
             setIsLoading(false); // Fin du chargement
         }
     };
     const fetchDoneTodos = async () => {
+        setSortToDos('Done');
+        setIsCancelled(false);
+        setIsDone(true);
         setTodos([]);
+
         setIsLoading(true);
         try {
             const response = await fetch('http://localhost:5144/api/todo/todos/done');
             const data = await response.json();
-            setTodos(data.todos);
+
             if (response.status === 404 && data.message == "No done To-Dos found.") {
 
-                setError("No done To-Dos found.");;
+                setError("No done To-Dos found.");
                 throw new Error("No done To-Dos found.")
+                console.error(error);
+
             }
+            setTodos(data.todos);
+
             setError(null); // Réinitialisation des erreurs
         } catch (error) {
-            setError('Error fetching done To-Dos.');
+            // setError('Error fetching cancelled To-Dos.');
             console.error(error);
         } finally {
             setIsLoading(false); // Fin du chargement
         }
     };
     const fetchCancelledTodos = async () => {
+        setSortToDos('Cancelled');
         setTodos([]);
-
+        setIsDone(false);
         setIsLoading(true);
+        setIsCancelled(true);
         try {
             const response = await fetch('http://localhost:5144/api/todo/todos/cancelled');
             const data = await response.json();
 
             if (response.status === 404 && data.message == "No cancelled To-Dos found.") {
 
-                setError("No cancelled To-Dos found.");;
-                throw new Error('"No cancelled To-Dos found."')
+                setError("No cancelled To-Dos found.");
+                throw new Error("No cancelled To-Dos found.")
                 console.error(error);
 
             }
@@ -172,6 +197,9 @@ const HomePage: React.FC = () => {
                 closeModal(); // Ferme le modal après la création
                 const data = await response.json();
                 setSuccess(`To-Do "${data.todo.title}" created successfully!`);
+                setTimeout(() => {
+                    setSuccess("");
+                }, 2000);
                 fetchTodos(); // Rafraîchit la liste des To-Dos
             } else {
                 const errorData = await response.json();
@@ -187,7 +215,6 @@ const HomePage: React.FC = () => {
     };
     const ShowTodoDetails = (todo: ToDo) => {
         setSelectedTodo(todo); // Définit le To-Do sélectionné
-        console.log(todo)
         setIsEditing(false);
         setIsToDoModalOpen(true); // Ouvre le modal
     };
@@ -196,10 +223,7 @@ const HomePage: React.FC = () => {
         setIsToDoModalOpen(false);
 
     };
-    const handleEditTodo = (todoId: number) => {
-        // setSelectedTodo(todo); // Définit le To-Do sélectionné
-        // setIsToDoModalOpen(true); // Ouvre le modal
-    };
+
     const handleDeleteTodo = async (todo: ToDo) => {
         if (!todo) return; // Vérifie si un To-Do est bien sélectionné
 
@@ -232,27 +256,84 @@ const HomePage: React.FC = () => {
         }
     };
 
-    const handleCancelTodo = async (todo: ToDo) => {
+    const handleChangeStatusToCancelled = async (todoId: number) => {
         const confirmCancel = window.confirm('Are you sure you want to cancel this To-Do?');
         if (!confirmCancel) return;
 
         setIsLoading(true); // Indicateur de chargement
 
         try {
-            const response = await fetch(`http://localhost:5144/api/todo/cancel`, {
-                method: 'PATCH', // Utilisation de PATCH pour modifier l'état du To-Do
+            const response = await fetch('http://localhost:5144/api/todo/cancel', {
+                method: 'PUT', // Utilisation de PATCH pour modifier l'état du To-Do
                 headers: { 'Content-Type': 'application/json' },
-            });
+                body: JSON.stringify(todoId),
 
-            if (response.ok) {
-                setSuccess('To-Do cancelled successfully!');
-                fetchTodos(); // Rafraîchit la liste des To-Dos
-            } else {
+            });
+            const data = await response.json();
+            if (response.ok && data.message == "To-Do item already cancelled") {
+                setError("To-Do item already cancelled");
+                setTimeout(() => {
+                    setSuccess('');
+                }, 2000);
+                closeToDoModal();
+            }
+
+            else if (response.ok) {
+                setSuccess("To-Do's status successfully changed to cancelled!");
+                fetchCancelledTodos(); // Rafraîchit la liste des To-Dos après mise à jour
+                closeToDoModal(); // Ferme le modal après la mise à jour
+                setTimeout(() => {
+                    setSuccess('');
+                }, 2000);
+            }
+
+            else {
                 const errorData = await response.json();
                 setError(errorData.message || 'Failed to cancel To-Do');
             }
         } catch (error) {
             setError('Error cancelling To-Do.');
+            console.error(error);
+        } finally {
+            setIsLoading(false); // Fin du chargement
+        }
+    };
+    const handleChangeStatusToDone = async (todoId: number) => {
+        const confirmCancel = window.confirm('Are you sure you want to cancel this To-Do?');
+        if (!confirmCancel) return;
+
+        setIsLoading(true); // Indicateur de chargement
+
+        try {
+            const response = await fetch('http://localhost:5144/api/todo/done', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(todoId),
+
+            });
+            const data = await response.json();
+            if (response.ok && data.message == "To-Do item already done") {
+                setError("To-Do item already done");
+                closeToDoModal();
+                setTimeout(() => {
+                    setSuccess('');
+                }, 2000);
+            }
+
+            else if (response.ok) {
+                setSuccess("To-Do's status successfully changed to done!");
+
+                fetchDoneTodos(); // Rafraîchit la liste des To-Dos après mise à jour
+                closeToDoModal(); // Ferme le modal après la mise à jour
+                setTimeout(() => {
+                    setSuccess('');
+                }, 2000);
+            } else {
+                const errorData = await response.json();
+                setError(errorData.message || 'Failed to cancel To-Do');
+            }
+        } catch (error) {
+            setError('Error changing To-Do status to done.');
             console.error(error);
         } finally {
             setIsLoading(false); // Fin du chargement
@@ -268,7 +349,7 @@ const HomePage: React.FC = () => {
             description: todo.description,
             userId: user?.id.toString() || '', // Utilise l'ID utilisateur à partir du contexte
             deadline: formattedDeadline,
-            Status: todo.Status // Formatte la date
+            status: todo.status // Formatte la date
         };
 
         try {
@@ -284,7 +365,10 @@ const HomePage: React.FC = () => {
                 const result = await response.json();
                 setSuccess(`To-Do "${updatedModel.title}" updated successfully!`);
                 fetchTodos(); // Rafraîchit la liste des To-Dos après mise à jour
-                closeToDoModal(); // Ferme le modal après la mise à jour
+                closeToDoModal();
+                setTimeout(() => {
+                    setSuccess('');
+                }, 2000); // Ferme le modal après la mise à jour
                 console.log("model closed");
             } else {
                 const errorData = await response.json();
@@ -305,7 +389,7 @@ const HomePage: React.FC = () => {
         <div className={styles.homepage}>
             <div className={styles.header}>
                 <button onClick={() => setIsModalOpen(true)}>Create To-Do</button>
-                <button onClick={() => alert('Generate To-Do with ChatGPT feature not implemented.')}>Create To-Do/s with ChatGPT</button>
+                {/* <button onClick={() => alert('Generate To-Do with ChatGPT feature not implemented.')}>Create To-Do/s with ChatGPT</button> */}
                 <button onClick={handleLogout}>Logout</button>
             </div>
 
@@ -329,14 +413,13 @@ const HomePage: React.FC = () => {
                     {success && <div className={styles.success}>{success}</div>}
 
                     {/* Liste des To-Dos */}
-                    <h3>My To-Dos</h3>
+                    <h1>My {sortToDos} To-Dos</h1>
                     <ul className={styles['todo-list']}>
                         {todos.map((todo) => (
                             <li key={todo.id}>
                                 <button className={styles['todo-item']} onClick={() => ShowTodoDetails(todo)}>
                                     <div className={styles['todoitem-content']}> {/* Utilisation du style du modal */}
-                                        <h3>{todo.title}</h3>
-                                        <p>{todo.description}</p>
+                                        <h1>{todo.title}</h1>
                                         <p>{new Date(todo.deadline).toLocaleString()}</p>
                                     </div>
                                 </button>
@@ -387,15 +470,16 @@ const HomePage: React.FC = () => {
                                     <div className={styles['button-container']}>
                                         {isEditing ? (
                                             <>
-                                                <button type="button" onClick={() => handleUpdateTodo(selectedTodo)}>Save</button>
-                                                <button type="button" onClick={() => setIsEditing(false)}>Cancel</button>
+                                                <button className={styles['save']} type="button" onClick={() => handleUpdateTodo(selectedTodo)}>Save</button>
+                                                <button className={styles['cancel']} type="button" onClick={() => setIsEditing(false)}>Cancel</button>
                                             </>
                                         ) : (
                                             <>
-                                                <button type="button" onClick={() => setIsEditing(true)}>Edit Todo</button>
-                                                <button type="button" onClick={() => handleDeleteTodo(selectedTodo)}>Delete Todo</button>
-                                                <button type="button" onClick={() => handleCancelTodo(selectedTodo)}>Cancel Todo</button>
-
+                                                <button className={styles['delete']} type="button" onClick={() => handleDeleteTodo(selectedTodo)}>Delete</button>
+                                                {isCancelled ? '' : (<button className={styles['cancel']} type="button" onClick={() => handleChangeStatusToCancelled(selectedTodo.id)}>Cancel</button>)}
+                                                <button className={styles['edit']} type="button" onClick={() => setIsEditing(true)}>Edit</button>
+                                                {isDone ? '' : <button className={styles['done']} type="button" onClick={() => handleChangeStatusToDone(selectedTodo.id)}>Done</button>
+                                                }
                                             </>
                                         )}
                                     </div>
