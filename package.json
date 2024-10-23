@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "@tanstack/router-plugin": "^1.62.0",
+    "@types/js-cookie": "^3.0.6",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.2",
@@ -26,6 +27,7 @@
     "@tanstack/react-router": "^1.62.1",
     "@tanstack/router-devtools": "^1.62.1",
     "install": "^0.13.0",
+    "js-cookie": "^3.0.5",
     "jwt-decode": "^4.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

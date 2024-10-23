@@ -4,11 +4,16 @@ import { Status } from '../Models/Status';
 import styles from '../Styles/Home.module.css'; // Importation des styles CSS Modules
 import { useAuth } from '../Components/Auth';
 import { ToDoViewModel } from '../Models/ToDoViewModel';
+import { METHODS } from 'http';
+import { json } from 'stream/consumers';
+import { User } from '../Components/User';
+import Cookies from 'js-cookie';
+import { useNavigate } from '@tanstack/react-router';
+
 
 const HomePage: React.FC = () => {
     const [todos, setTodos] = useState<ToDo[]>([]);
     const [sortToDos, setSortToDos] = useState<string>('');
-
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isToDoModalOpen, setIsToDoModalOpen] = useState(false);
     const [selectedTodo, setSelectedTodo] = useState<ToDo | null>(null);
@@ -17,152 +22,152 @@ const HomePage: React.FC = () => {
     const [description, setDescription] = useState<string>('');
     const [deadline, setDeadline] = useState<string>('');
     const [status, setStatus] = useState<Status>(Status.Upcoming);
-    const [isCancelled, setIsCancelled] = useState(false);
+    const [isUpcoming, setIsUpcoming] = useState(false);
     const [isDone, setIsDone] = useState(false);
-
-
+    const [isCancelled, setIsCancelled] = useState(false);
+    const navigate = useNavigate();
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(false); // Ajout d'un indicateur de chargement
-    const { user } = useAuth();
+    const [isLoading, setIsLoading] = useState<boolean>(false); // Adding a loading indicator
+    const { user, setIsauth } = useAuth();
+    const [localUser, setLocalUser] = useState<User>();
     const inputRef = useRef<HTMLInputElement>(null);
 
-
-
     useEffect(() => {
-        fetchTodos(); // Appel initial pour récupérer les To-Dos
+        fetchTodos();
+        // Initial call to fetch To-Dos
     }, []);
 
-
-    // Fonction pour récupérer les To-Dos avec un filtre par statut
+    // Function to fetch To-Dos with a status filter
     const fetchTodos = async () => {
         setSortToDos('');
         setIsDone(false);
         setIsCancelled(false);
-        setIsLoading(true); // Commence le chargement
+        setIsLoading(true); // Start loading
 
         try {
-            const response = await fetch('http://localhost:5144/api/todo/todos');
+            const response = await fetch('http://localhost:5144/api/todo/todos/all-todos', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify(String(user?.id))
+
+            });
             const data = await response.json();
             if (response.status === 404 && data.message == "No To-Dos found.") {
-                setError("No cancelled To-Dos found.");;
-                throw new Error("No To-Dos found.")
+                setError("No To-Dos found.");
+                setTodos(data.todos);
                 console.error(error);
+                throw new Error("No To-Dos found.");
             }
-            setTodos(data.todos)
-
-            setError(null); // Réinitialisation des erreurs
+            setTodos(data.todos);
+            setError(null); // Reset errors
         } catch (error) {
-            setError('Error fetching To-Dos.');
             console.error(error);
         } finally {
-            setIsLoading(false); // Fin du chargement
+            setIsLoading(false); // End loading
         }
     };
 
-
     const handleLogout = async () => {
-        try {
-            const response = await fetch('http://localhost:5144/api/login/logout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-            });
-
-            if (response.ok) {
-                window.location.href = '/login'; // Redirection vers la page de connexion
-            } else {
-                const errorData = await response.json();
-                console.error('Logout failed:', errorData.message || 'Something went wrong');
-            }
-        } catch (error) {
-            console.error('Error logging out:', error);
-        }
+        setIsauth(false); // Update authentication state
+        setUser(undefined); // Clear user state
+        Cookies.remove('isauth'); // Remove authentication cookie
+        Cookies.remove('user'); // Remove user cookie
+        navigate({ to: '/login' }); // Redirect to the home page or login page
     };
 
     const fetchUpcomingTodos = async () => {
         setSortToDos("Upcoming");
         setIsLoading(true);
         setIsDone(false);
-        setIsCancelled(false)
+        setIsCancelled(false);
+        setIsUpcoming(true);
         try {
-            const response = await fetch('http://localhost:5144/api/todo/todos/upcoming');
+            const response = await fetch('http://localhost:5144/api/todo/todos/upcoming', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify(String(user?.id))
+
+            });
             const data = await response.json();
 
             if (response.status === 404 && data.message == "No upcoming To-Dos found.") {
-
                 setError("No upcoming To-Dos found.");
                 setTodos(data.todos);
                 console.error(error);
-                throw new Error("No upcoming To-Dos found.")
-
-
+                throw new Error("No upcoming To-Dos found.");
             }
             setTodos(data.todos);
 
-            setError(null); // Réinitialisation des erreurs
+            setError(null); // Reset errors
         } catch (error) {
-            // setError('Error fetching cancelled To-Dos.');
             console.error(error);
         } finally {
-            setIsLoading(false); // Fin du chargement
+            setIsLoading(false); // End loading
         }
     };
+
     const fetchDoneTodos = async () => {
         setSortToDos('Done');
+        setIsLoading(true);
         setIsCancelled(false);
         setIsDone(true);
-        setTodos([]);
-
-        setIsLoading(true);
         try {
-            const response = await fetch('http://localhost:5144/api/todo/todos/done');
+            const response = await fetch('http://localhost:5144/api/todo/todos/done', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify(String(user?.id))
+
+            });
             const data = await response.json();
 
             if (response.status === 404 && data.message == "No done To-Dos found.") {
-
                 setError("No done To-Dos found.");
-                throw new Error("No done To-Dos found.")
+                setTodos(data.todos);
                 console.error(error);
-
+                throw new Error("No done To-Dos found.");
             }
             setTodos(data.todos);
-
-            setError(null); // Réinitialisation des erreurs
+            setError(null); // Reset errors
         } catch (error) {
-            // setError('Error fetching cancelled To-Dos.');
             console.error(error);
         } finally {
-            setIsLoading(false); // Fin du chargement
+            setIsLoading(false); // End loading
         }
+
+
     };
+
     const fetchCancelledTodos = async () => {
         setSortToDos('Cancelled');
-        setTodos([]);
         setIsDone(false);
         setIsLoading(true);
         setIsCancelled(true);
         try {
-            const response = await fetch('http://localhost:5144/api/todo/todos/cancelled');
+            const response = await fetch('http://localhost:5144/api/todo/todos/cancelled', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify(String(user?.id))
+
+            });
             const data = await response.json();
 
             if (response.status === 404 && data.message == "No cancelled To-Dos found.") {
-
                 setError("No cancelled To-Dos found.");
-                throw new Error("No cancelled To-Dos found.")
+                throw new Error("No cancelled To-Dos found.");
                 console.error(error);
-
             }
             setTodos(data.todos);
 
-            setError(null); // Réinitialisation des erreurs
+            setError(null); // Reset errors
         } catch (error) {
-            // setError('Error fetching cancelled To-Dos.');
             console.error(error);
         } finally {
-            setIsLoading(false); // Fin du chargement
+            setIsLoading(false); // End loading
         }
     };
-    // Fermer le modal
+
+    // Close the modal
     const closeModal = () => {
         setIsModalOpen(false);
         setTitle('');
@@ -171,7 +176,8 @@ const HomePage: React.FC = () => {
         setError(null);
         setSuccess(null);
     };
-    // Gestion de la création d'un nouveau To-Do
+
+    // Handling the creation of a new To-Do
     const handleCreateTodo = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
         if (!title || !description || !deadline) {
@@ -182,7 +188,7 @@ const HomePage: React.FC = () => {
         const model: ToDoViewModel = {
             Title: title,
             Description: description,
-            UserId: user?.id.toString() || '', // Utilise l'ID utilisateur à partir du contexte
+            UserId: user?.id.toString() || '', // Use user ID from context
             Deadline: formattedDeadline,
         };
 
@@ -192,15 +198,18 @@ const HomePage: React.FC = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(model),
             });
+            const data = await response.json();
 
             if (response.ok) {
-                closeModal(); // Ferme le modal après la création
-                const data = await response.json();
+                closeModal(); // Close the modal after creation
                 setSuccess(`To-Do "${data.todo.title}" created successfully!`);
                 setTimeout(() => {
                     setSuccess("");
                 }, 2000);
-                fetchTodos(); // Rafraîchit la liste des To-Dos
+                fetchTodos(); // Refresh the To-Dos list
+            } else if (response.status == 400 && data.message == "The deadline cannot be in the past.") {
+                console.log("the deadline is the past");
+                setError("The deadline cannot be in the past.");
             } else {
                 const errorData = await response.json();
                 setError(errorData.message || 'Failed to create To-Do');
@@ -213,163 +222,126 @@ const HomePage: React.FC = () => {
             }
         }
     };
+
     const ShowTodoDetails = (todo: ToDo) => {
-        setSelectedTodo(todo); // Définit le To-Do sélectionné
+        setSelectedTodo(todo); // Set the selected To-Do
         setIsEditing(false);
-        setIsToDoModalOpen(true); // Ouvre le modal
+        setIsToDoModalOpen(true); // Open the modal
     };
+
 
     const closeToDoModal = () => {
         setIsToDoModalOpen(false);
-
     };
 
     const handleDeleteTodo = async (todo: ToDo) => {
-        if (!todo) return; // Vérifie si un To-Do est bien sélectionné
-
-        const confirmDelete = window.confirm(`Are you sure you want to delete the To-Do "${todo.title}"?`);
-        if (!confirmDelete) return; // Si l'utilisateur annule la suppression, on arrête ici
-
         try {
-            const response = await fetch('http://localhost:5144/api/todo/delete', {
+            const response = await fetch('http://localhost:5144/api/todo/todos/delete', {
                 method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(todo), // Envoie le To-Do complet dans le corps de la requête
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(todo),
             });
 
             if (response.ok) {
-                setSuccess(`To-Do "${todo.title}" deleted successfully!`); // Message de succès
-                fetchTodos(); // Rafraîchit la liste des To-Dos après suppression
-                closeToDoModal(); // Ferme le modal après la suppression
-            } else {
-                const errorData = await response.json();
-                setError(errorData.message || 'Failed to delete To-Do'); // Message d'erreur personnalisé
+                closeToDoModal();
+                setSuccess(`To-Do "${todo.title}" deleted successfully!`);
             }
+
         } catch (error: unknown) {
             if (error instanceof Error) {
-                setError(`Error: ${error.message}`); // Gère les erreurs connues
+                setError(`Error: ${error.message}`);
             } else {
-                setError('Unknown error occurred while deleting the To-Do.'); // Gère les erreurs inconnues
+                setError('Unknown error occurred while deleting the To-Do.');
             }
         }
     };
+
 
     const handleChangeStatusToCancelled = async (todoId: number) => {
         const confirmCancel = window.confirm('Are you sure you want to cancel this To-Do?');
         if (!confirmCancel) return;
 
-        setIsLoading(true); // Indicateur de chargement
+        setIsLoading(true);
 
         try {
             const response = await fetch('http://localhost:5144/api/todo/cancel', {
-                method: 'PUT', // Utilisation de PATCH pour modifier l'état du To-Do
+                method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(todoId),
-
             });
+
             const data = await response.json();
-            if (response.ok && data.message == "To-Do item already cancelled") {
+            if (response.ok && data.message === "To-Do item already cancelled") {
                 setError("To-Do item already cancelled");
-                setTimeout(() => {
-                    setSuccess('');
-                }, 2000);
                 closeToDoModal();
-            }
-
-            else if (response.ok) {
+            } else if (response.ok) {
                 setSuccess("To-Do's status successfully changed to cancelled!");
-                fetchCancelledTodos(); // Rafraîchit la liste des To-Dos après mise à jour
-                closeToDoModal(); // Ferme le modal après la mise à jour
-                setTimeout(() => {
-                    setSuccess('');
-                }, 2000);
-            }
-
-            else {
+                fetchCancelledTodos();
+                closeToDoModal();
+            } else {
                 const errorData = await response.json();
                 setError(errorData.message || 'Failed to cancel To-Do');
             }
         } catch (error) {
             setError('Error cancelling To-Do.');
-            console.error(error);
         } finally {
-            setIsLoading(false); // Fin du chargement
+            setIsLoading(false);
         }
     };
-    const handleChangeStatusToDone = async (todoId: number) => {
-        const confirmCancel = window.confirm('Are you sure you want to cancel this To-Do?');
-        if (!confirmCancel) return;
 
-        setIsLoading(true); // Indicateur de chargement
+    const handleChangeStatusToDone = async (todoId: number) => {
+        const confirmDone = window.confirm('Are you sure you want to mark this To-Do as done?');
+        if (!confirmDone) return;
+
+        setIsLoading(true);
 
         try {
             const response = await fetch('http://localhost:5144/api/todo/done', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(todoId),
-
             });
+
             const data = await response.json();
-            if (response.ok && data.message == "To-Do item already done") {
+            if (response.ok && data.message === "To-Do item already done") {
                 setError("To-Do item already done");
                 closeToDoModal();
-                setTimeout(() => {
-                    setSuccess('');
-                }, 2000);
-            }
-
-            else if (response.ok) {
+            } else if (response.ok) {
                 setSuccess("To-Do's status successfully changed to done!");
-
-                fetchDoneTodos(); // Rafraîchit la liste des To-Dos après mise à jour
-                closeToDoModal(); // Ferme le modal après la mise à jour
-                setTimeout(() => {
-                    setSuccess('');
-                }, 2000);
+                fetchDoneTodos();
+                closeToDoModal();
             } else {
                 const errorData = await response.json();
-                setError(errorData.message || 'Failed to cancel To-Do');
+                setError(errorData.message || 'Failed to mark To-Do as done');
             }
         } catch (error) {
             setError('Error changing To-Do status to done.');
-            console.error(error);
         } finally {
-            setIsLoading(false); // Fin du chargement
+            setIsLoading(false);
         }
     };
-    const handleUpdateTodo = async (todo: ToDo) => {
-        if (!todo) return; // Si aucun To-Do sélectionné, ne rien faire
-        const formattedDeadline = new Date(todo.deadline).toISOString();
 
+    const handleUpdateTodo = async (todo: ToDo) => {
+        if (!todo) return;
+
+        const formattedDeadline = new Date(todo.deadline).toISOString();
         const updatedModel: ToDo = {
-            id: todo.id,
-            title: todo.title,
-            description: todo.description,
-            userId: user?.id.toString() || '', // Utilise l'ID utilisateur à partir du contexte
+            ...todo,
+            userId: user?.id.toString() || '',
             deadline: formattedDeadline,
-            status: todo.status // Formatte la date
         };
 
         try {
             const response = await fetch('http://localhost:5144/api/todo/update', {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(updatedModel),
             });
 
             if (response.ok) {
-                const result = await response.json();
                 setSuccess(`To-Do "${updatedModel.title}" updated successfully!`);
-                fetchTodos(); // Rafraîchit la liste des To-Dos après mise à jour
+                fetchTodos();
                 closeToDoModal();
-                setTimeout(() => {
-                    setSuccess('');
-                }, 2000); // Ferme le modal après la mise à jour
-                console.log("model closed");
             } else {
                 const errorData = await response.json();
                 setError(errorData.message || 'Failed to update To-Do');
@@ -383,13 +355,10 @@ const HomePage: React.FC = () => {
         }
     };
 
-
-
     return (
         <div className={styles.homepage}>
             <div className={styles.header}>
                 <button onClick={() => setIsModalOpen(true)}>Create To-Do</button>
-                {/* <button onClick={() => alert('Generate To-Do with ChatGPT feature not implemented.')}>Create To-Do/s with ChatGPT</button> */}
                 <button onClick={handleLogout}>Logout</button>
             </div>
 
@@ -405,20 +374,16 @@ const HomePage: React.FC = () => {
                 </div>
 
                 <div className={styles['main-content']}>
-                    {/* Affichage de l'indicateur de chargement */}
                     {isLoading && <p>Loading...</p>}
-
-                    {/* Affichage des messages d'erreur ou de succès */}
                     {error && <div className={styles.error}>{error}</div>}
                     {success && <div className={styles.success}>{success}</div>}
 
-                    {/* Liste des To-Dos */}
                     <h1>My {sortToDos} To-Dos</h1>
                     <ul className={styles['todo-list']}>
                         {todos.map((todo) => (
                             <li key={todo.id}>
                                 <button className={styles['todo-item']} onClick={() => ShowTodoDetails(todo)}>
-                                    <div className={styles['todoitem-content']}> {/* Utilisation du style du modal */}
+                                    <div className={styles['todoitem-content']}>
                                         <h1>{todo.title}</h1>
                                         <p>{new Date(todo.deadline).toLocaleString()}</p>
                                     </div>
@@ -426,7 +391,8 @@ const HomePage: React.FC = () => {
                             </li>
                         ))}
                     </ul>
-                    {isToDoModalOpen && selectedTodo && ( // Vérifie si le modal est ouvert et si un To-Do est sélectionné
+
+                    {isToDoModalOpen && selectedTodo && (
                         <div className={styles.modal}>
                             <div className={styles['modal-content']}>
                                 <span className={styles.close} onClick={closeToDoModal}>&times;</span>
@@ -434,52 +400,34 @@ const HomePage: React.FC = () => {
                                     <h3>{isEditing ? 'Edit To-Do' : 'To-Do Details'}</h3>
                                     <input
                                         type="text"
-                                        placeholder="Title"
-                                        value={selectedTodo?.title || ''} // Utilise le titre du To-Do sélectionné
-                                        onChange={(e) => {
-                                            if (selectedTodo) {
-                                                setSelectedTodo({ ...selectedTodo, title: e.target.value }); // Met à jour le titre du To-Do sélectionné
-                                            }
-                                        }}
-                                        required
+                                        value={selectedTodo?.title || ''}
+                                        onChange={(e) => setSelectedTodo({ ...selectedTodo, title: e.target.value })}
                                         disabled={!isEditing}
-                                        autoFocus={isEditing} />
+                                    />
                                     <input
                                         type="text"
-                                        placeholder="Description"
                                         value={selectedTodo.description}
-                                        onChange={(e) => {
-                                            if (selectedTodo) {
-                                                setSelectedTodo({ ...selectedTodo, description: e.target.value }); // Met à jour la description du To-Do sélectionné
-                                            }
-                                        }}
-                                        required
-                                        disabled={!isEditing} />
+                                        onChange={(e) => setSelectedTodo({ ...selectedTodo, description: e.target.value })}
+                                        disabled={!isEditing}
+                                    />
                                     <input
                                         type="datetime-local"
-                                        value={new Date(selectedTodo.deadline).toISOString().slice(0, 16)} // Format YYYY-MM-DDTHH:MM
-                                        onChange={(e) => {
-                                            if (selectedTodo) {
-                                                setSelectedTodo({ ...selectedTodo, deadline: e.target.value });
-                                            }
-                                        }}
+                                        value={new Date(selectedTodo.deadline).toISOString().slice(0, 16)}
+                                        onChange={(e) => setSelectedTodo({ ...selectedTodo, deadline: e.target.value })}
                                     />
 
-
-                                    {/* Boutons pour Edit, Cancel et Delete */}
                                     <div className={styles['button-container']}>
                                         {isEditing ? (
                                             <>
-                                                <button className={styles['save']} type="button" onClick={() => handleUpdateTodo(selectedTodo)}>Save</button>
-                                                <button className={styles['cancel']} type="button" onClick={() => setIsEditing(false)}>Cancel</button>
+                                                <button onClick={() => handleUpdateTodo(selectedTodo)}>Save</button>
+                                                <button onClick={() => setIsEditing(false)}>Cancel</button>
                                             </>
                                         ) : (
                                             <>
-                                                <button className={styles['delete']} type="button" onClick={() => handleDeleteTodo(selectedTodo)}>Delete</button>
-                                                {isCancelled ? '' : (<button className={styles['cancel']} type="button" onClick={() => handleChangeStatusToCancelled(selectedTodo.id)}>Cancel</button>)}
-                                                <button className={styles['edit']} type="button" onClick={() => setIsEditing(true)}>Edit</button>
-                                                {isDone ? '' : <button className={styles['done']} type="button" onClick={() => handleChangeStatusToDone(selectedTodo.id)}>Done</button>
-                                                }
+                                                <button onClick={() => handleDeleteTodo(selectedTodo)}>Delete</button>
+                                                {!isCancelled && <button onClick={() => handleChangeStatusToCancelled(selectedTodo.id)}>Cancel</button>}
+                                                <button onClick={() => setIsEditing(true)}>Edit</button>
+                                                {!isDone && <button onClick={() => handleChangeStatusToDone(selectedTodo.id)}>Done</button>}
                                             </>
                                         )}
                                     </div>
@@ -488,33 +436,15 @@ const HomePage: React.FC = () => {
                         </div>
                     )}
 
-                    {/* Modal pour créer un nouveau To-Do */}
                     {isModalOpen && (
                         <div className={styles.modal}>
                             <div className={styles['modal-content']}>
                                 <span className={styles.close} onClick={closeModal}>&times;</span>
                                 <form onSubmit={handleCreateTodo}>
                                     <h3>Create To-Do</h3>
-                                    <input
-                                        type="text"
-                                        placeholder="Title"
-                                        value={title}
-                                        onChange={(e) => setTitle(e.target.value)}
-                                        required
-                                    />
-                                    <input
-                                        type="text"
-                                        placeholder="Description"
-                                        value={description}
-                                        onChange={(e) => setDescription(e.target.value)}
-                                        required
-                                    />
-                                    <input
-                                        type="datetime-local"
-                                        value={deadline}
-                                        onChange={(e) => setDeadline(e.target.value)}
-                                        required
-                                    />
+                                    <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
+                                    <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} required />
+                                    <input type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} required />
                                     <button type="submit">Create</button>
                                 </form>
                             </div>
@@ -528,3 +458,7 @@ const HomePage: React.FC = () => {
 };
 
 export default HomePage;
+function setUser(undefined: undefined) {
+    throw new Error('Function not implemented.');
+}
+

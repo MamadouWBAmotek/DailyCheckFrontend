@@ -1,4 +1,5 @@
-import { useState, createContext, useContext } from 'react';
+import React, { useState, createContext, useContext, useEffect } from 'react';
+import Cookies from 'js-cookie'; // Import js-cookie
 import { User } from './User';
 import { GoogleUser } from './GoogleUser';
 
@@ -6,8 +7,8 @@ import { GoogleUser } from './GoogleUser';
 interface AuthContextType {
     isauth: boolean; // Indicates if the user is authenticated
     setIsauth: (value: boolean) => void; // Function to update the authentication state
-    user?: User | GoogleUser; // Can be a regular user (User) or a Google user (GoogleUser)
-    setUser: (user: User | GoogleUser) => void; // Function to set the logged-in user
+    user?: User; //
+    setUser: (user: User|undefined) => void; // Function to set the logged-in user
 }
 
 // Create the authentication context
@@ -15,11 +16,29 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Provider for the authentication context
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [isauth, setIsauth] = useState<boolean>(false); // State to track if the user is authenticated
-    const [user, setUser] = useState<User | GoogleUser>(); // State to store the current user
+    const [isauth, setIsauth] = useState<boolean>(() => {
+        // Initialize state from cookie if it exists
+        return !!Cookies.get('isauth');
+    });
+    const [user, setUser] = useState<User|undefined>(() => {
+        // Retrieve user information from cookie if it exists
+        const userCookie = Cookies.get('user');
+        return userCookie ? JSON.parse(userCookie) : undefined;
+    });
+
+    // Effect to handle side effects of authentication state changes
+    useEffect(() => {
+        // Set or remove cookies based on authentication state
+        if (isauth) {
+            Cookies.set('isauth', 'true'); // Set the cookie when authenticated
+            Cookies.set('user', JSON.stringify(user)); // Store user info in a cookie
+        } else {
+            Cookies.remove('isauth'); // Remove cookie when logged out
+            Cookies.remove('user'); // Remove user info cookie
+        }
+    }, [isauth, user]);
 
     return (
-        // Provides the state and the update functions to the rest of the app
         <AuthContext.Provider value={{ isauth, setIsauth, user, setUser }}>
             {children}
         </AuthContext.Provider>
