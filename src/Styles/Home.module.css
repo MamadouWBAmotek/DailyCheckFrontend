@@ -2,10 +2,11 @@
 * {
     box-sizing: border-box;
 }
-body{
+
+/* body {
     background-color: #F0F0F5;
 
-}
+} */
 
 .homepage {
     display: flex;
@@ -51,7 +52,7 @@ body{
 }
 
 .header button:hover {
-    background-color: #34495E;
+    background-color: #34495E;   
     /* Couleur des boutons au survol */
     transform: scale(1.05);
     /* Zoom sur hover */
@@ -162,10 +163,47 @@ body{
     align-items: center;
 }
 
+.usermodelmodal {
+    position: fixed;
+    top: 86px;
+    right: 0px;
+    background-color: #4B6584;
+    color: white;
+    border-radius: 5px;
+    padding: 5px;
+    width: 10%;
+}
+
+.usermodelmodal div {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 1.5rem;
+
+}
+
+.usermodelmodal button {
+    background-color: #2C3E50;
+    width: 100%;
+    border-radius: 5px;
+}
+
+.usermodelmodal button:hover {
+    background-color: #34495E;
+
+}
+
 .close {
     font-size: 24px;
     cursor: pointer;
     /* Pointeur sur hover */
+}
+
+.close:hover {
+    font-size: 30px;
+    color: red
+        /* Pointeur sur hover */
 }
 
 .modal-content {
@@ -203,7 +241,7 @@ body{
 .modal-content button {
     margin-top: 15px;
     padding: 12px;
-    border-radius: 8px;
+    border-radius: 6px;
     background-color: #34495E;
     color: white;
     border: none;
@@ -262,7 +300,9 @@ body{
     color: #4B6584;
     /* Couleur du texte au survol */
 }
-
+.todo-item h1 {
+    font-size: 30px;
+}
 .todoitem-content {
     height: 60px;
     display: flex;

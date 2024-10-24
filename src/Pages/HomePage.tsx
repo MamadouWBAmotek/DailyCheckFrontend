@@ -7,15 +7,18 @@ import { ToDoViewModel } from '../Models/ToDoViewModel';
 import { METHODS } from 'http';
 import { json } from 'stream/consumers';
 import { User } from '../Components/User';
+import { faUser } from '@fortawesome/free-solid-svg-icons';
 import Cookies from 'js-cookie';
 import { useNavigate } from '@tanstack/react-router';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 
 const HomePage: React.FC = () => {
     const [todos, setTodos] = useState<ToDo[]>([]);
     const [sortToDos, setSortToDos] = useState<string>('');
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isToDoModalOpen, setIsToDoModalOpen] = useState(false);
+    const [isUserModalOpen, setIsUserModalOpen] = useState(false);
     const [selectedTodo, setSelectedTodo] = useState<ToDo | null>(null);
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [title, setTitle] = useState<string>('');
@@ -169,7 +172,7 @@ const HomePage: React.FC = () => {
 
     // Close the modal
     const closeModal = () => {
-        setIsModalOpen(false);
+        setIsCreateModalOpen(false);
         setTitle('');
         setDescription('');
         setDeadline('');
@@ -271,7 +274,8 @@ const HomePage: React.FC = () => {
             });
 
             const data = await response.json();
-            if (response.ok && data.message === "To-Do item already cancelled") {
+            console.log(data.message)
+            if (response.status == 400 && data.message === "To-Do item already cancelled") {
                 setError("To-Do item already cancelled");
                 closeToDoModal();
             } else if (response.ok) {
@@ -322,24 +326,19 @@ const HomePage: React.FC = () => {
     };
 
     const handleUpdateTodo = async (todo: ToDo) => {
-        if (!todo) return;
 
-        const formattedDeadline = new Date(todo.deadline).toISOString();
-        const updatedModel: ToDo = {
-            ...todo,
-            userId: user?.id.toString() || '',
-            deadline: formattedDeadline,
-        };
+        console.log(todo);
+        const formattedDeadline = new Date(todo.deadline).toISOString()
 
         try {
-            const response = await fetch('http://localhost:5144/api/todo/update', {
+            const response = await fetch('http://localhost:5144/api/todo/todos/update', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updatedModel),
+                body: JSON.stringify(todo),
             });
 
             if (response.ok) {
-                setSuccess(`To-Do "${updatedModel.title}" updated successfully!`);
+                setSuccess(`To-Do "${todo.title}" updated successfully!`);
                 fetchTodos();
                 closeToDoModal();
             } else {
@@ -358,8 +357,8 @@ const HomePage: React.FC = () => {
     return (
         <div className={styles.homepage}>
             <div className={styles.header}>
-                <button onClick={() => setIsModalOpen(true)}>Create To-Do</button>
-                <button onClick={handleLogout}>Logout</button>
+                <button onClick={() => setIsCreateModalOpen(true)}>Create To-Do</button>
+                <button onClick={() => setIsUserModalOpen(true)}><FontAwesomeIcon icon={faUser}></FontAwesomeIcon></button>
             </div>
 
             <div className={styles['main-container']}>
@@ -383,8 +382,10 @@ const HomePage: React.FC = () => {
                         {todos.map((todo) => (
                             <li key={todo.id}>
                                 <button className={styles['todo-item']} onClick={() => ShowTodoDetails(todo)}>
+                                    <h1>{todo.title}</h1>
                                     <div className={styles['todoitem-content']}>
-                                        <h1>{todo.title}</h1>
+
+                                        <p>{todo.description}</p>
                                         <p>{new Date(todo.deadline).toLocaleString()}</p>
                                     </div>
                                 </button>
@@ -419,15 +420,15 @@ const HomePage: React.FC = () => {
                                     <div className={styles['button-container']}>
                                         {isEditing ? (
                                             <>
-                                                <button onClick={() => handleUpdateTodo(selectedTodo)}>Save</button>
-                                                <button onClick={() => setIsEditing(false)}>Cancel</button>
+                                                <button className={styles['save']} onClick={() => handleUpdateTodo(selectedTodo)}>Save</button>
+                                                <button className={styles['cancel']} onClick={() => setIsEditing(false)}>Cancel</button>
                                             </>
                                         ) : (
                                             <>
-                                                <button onClick={() => handleDeleteTodo(selectedTodo)}>Delete</button>
-                                                {!isCancelled && <button onClick={() => handleChangeStatusToCancelled(selectedTodo.id)}>Cancel</button>}
-                                                <button onClick={() => setIsEditing(true)}>Edit</button>
-                                                {!isDone && <button onClick={() => handleChangeStatusToDone(selectedTodo.id)}>Done</button>}
+                                                <button className={styles['delete']} onClick={() => handleDeleteTodo(selectedTodo)}>Delete</button>
+                                                {!isCancelled && <button className={styles['cancel']} onClick={() => handleChangeStatusToCancelled(selectedTodo.id)}>Cancel</button>}
+                                                <button className={styles['edit']} onClick={() => setIsEditing(true)}>Edit</button>
+                                                {!isDone && <button className={styles['save']} onClick={() => handleChangeStatusToDone(selectedTodo.id)}>Done</button>}
                                             </>
                                         )}
                                     </div>
@@ -436,7 +437,7 @@ const HomePage: React.FC = () => {
                         </div>
                     )}
 
-                    {isModalOpen && (
+                    {isCreateModalOpen && (
                         <div className={styles.modal}>
                             <div className={styles['modal-content']}>
                                 <span className={styles.close} onClick={closeModal}>&times;</span>
@@ -447,6 +448,15 @@ const HomePage: React.FC = () => {
                                     <input type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} required />
                                     <button type="submit">Create</button>
                                 </form>
+                            </div>
+                        </div>
+                    )}
+                    {isUserModalOpen && (
+                        <div className={styles.usermodelmodal}>
+                            <span className={styles.close} onClick={() => setIsUserModalOpen(false)}>&times;</span>
+                            <div className={styles['usermodal-content']}>
+                                <h1>{user?.userName}</h1>
+                                <button onClick={() => handleLogout()}>Logout</button>
                             </div>
                         </div>
                     )}
