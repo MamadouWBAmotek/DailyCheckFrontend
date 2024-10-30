@@ -1,0 +1,29 @@
+/* Button container styling */
+.buttonContainer {
+    text-align: center; /* Center the button */
+    margin-top: 20px; /* Added margin for spacing above the button */
+}
+
+/* Styling for the submit button */
+.submitButton {
+    background-color: #007aff; /* Background color for the button */
+    color: white; /* Text color for the button */
+    padding: 12px 20px; /* Increased padding */
+    border: none; /* Remove default border */
+    border-radius: 12px; /* Rounded corners for the button */
+    cursor: pointer; /* Change cursor to pointer */
+    font-size: 16px; /* Font size for the button */
+    transition: background-color 0.3s; /* Smooth transition for background color */
+    width: 50%; /* Full width for the button */
+}
+
+/* Hover effect for the submit button */
+.submitButton:hover {
+    background-color: #005bb5; /* Darker color on hover */
+}
+
+/* Disabled button styling */
+.submitButton:disabled {
+    background-color: #ccc; /* Grey color for disabled button */
+    cursor: not-allowed; /* Not-allowed cursor */
+}

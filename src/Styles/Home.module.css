@@ -132,7 +132,7 @@
     font-size: 1.2rem;
 }
 
-.error-message {
+.error {
     color: #e74c3c;
     /* Couleur des messages d'erreur */
     background-color: #fbeaea;
@@ -141,7 +141,7 @@
     margin: 10px 0;
 }
 
-.success-message {
+.success {
     color: #27ae60;
     /* Couleur des messages de succès */
     background-color: #e9f7ef;
@@ -289,15 +289,14 @@
     /* Bordure gris clair */
     border-radius: 10px;
     /* Prend toute la largeur de l'élément */
-    background-color: #F0F0F5;
+    background-color: #4B6584;
 
     /* Couleur de fond blanche */
 }
 
 .todo-list button:hover {
-    background-color: #f7f7f7;
+    background-color: #5C7A92;
     /* Couleur au survol */
-    color: #4B6584;
     /* Couleur du texte au survol */
 }
 .todo-item h1 {

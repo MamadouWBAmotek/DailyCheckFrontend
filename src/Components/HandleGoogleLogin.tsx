@@ -1,46 +1,71 @@
-import { jwtDecode } from "jwt-decode";
-import { LoginWithGoogleViewModel } from "../Models/LoginWithGoogleViewModel";
-import { useNavigate } from '@tanstack/react-router';
-import { useAuth } from "./Auth";
-import { useState } from "react";
-const { setIsauth } = useAuth();
-const [error, setError] = useState<string | null>(null);
-const navigate = useNavigate();
+// useGoogleLogin.ts
+import { useAuth } from '../Components/Auth'; // Importez le hook d'authentification
+import { jwtDecode } from 'jwt-decode';
+import Cookies from 'js-cookie';
 
+const useGoogleLogin = (navigate: any) => {
+    const { setIsauth, setUser,user } = useAuth(); // Utilisez le hook d'authentification
 
-export const handleGoogleLogin = async (credentialResponse: any): Promise<void> => {
-    if (credentialResponse.credential) {
-        const googleOAuthResponse = jwtDecode<any>(credentialResponse.credential);
+    const handleGoogleLogin = async (credentialResponse: any): Promise<void> => {
+        if (credentialResponse.credential) {
+            // Décodez le JWT reçu de Google
+            const googleOAuthResponse = jwtDecode<any>(credentialResponse.credential);
 
-        const googleOautData: LoginWithGoogleViewModel = {
-            Email: googleOAuthResponse.email,
-            username: googleOAuthResponse.given_name,
-            Id: googleOAuthResponse.sub,
-        };
+            // Modèle de données pour la connexion Google
+            const googleOautData = {
+                Email: googleOAuthResponse.email,
+                username: googleOAuthResponse.given_name,
+                Id: googleOAuthResponse.sub,
+            };
 
-        try {
-            const response = await fetch('http://localhost:5144/api/login/loginwithgoogle', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(googleOautData),
-            });
+            try {
+                // POST request to authenticate using Google OAuth
+                const response = await fetch('http://localhost:5144/api/login/loginwithgoogle', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(googleOautData),
+                });
 
-            if (response.ok) {
-                setIsauth(true); // Mettez à jour l'état d'authentification
-                setTimeout(() => {
-                    navigate({ to: '/home' });
-                }, 0);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.user != null) {
+                        setUser(data.user);
+                        console.log("it is a user" + typeof (data), user)
+                        setIsauth(true);
+                        Cookies.set('user', JSON.stringify(data.user));
+                        Cookies.set('isauth', 'true');
+                        setTimeout(() => {
+                            navigate({ to: '/home' });
 
-            } else {
-                const errorData = await response.json();
-                setError(errorData.message || "Something went wrong");
+                        }, 0);
+                    }
+                    else {
+                        setUser(data.googleUser)
+                        console.log("it is a googleuser" + typeof (data), data.googleUser)
+                        setIsauth(true);
+                        Cookies.set('user', JSON.stringify(data.googleUser));
+                        Cookies.set('isauth', 'true');
+                        setTimeout(() => {
+                            navigate({ to: '/home' });
+
+                        }, 0);
+                    }
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || "Something went wrong");
+                }
+            } catch (error) {
+                console.error('Error during Google login:', error);
+                throw new Error('Error checking email. Please try again later.');
             }
-        } catch (error) {
-            setError('Error checking email. Please try again later.');
+        } else {
+            throw new Error('No credential provided. Please try again.');
         }
-    } else {
-        setError('No credential provided. Please try again.');
-    }
+    };
+
+    return { handleGoogleLogin };
 };
+
+export default useGoogleLogin;

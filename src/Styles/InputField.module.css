@@ -1,0 +1,30 @@
+/* Styling for input field container with icon */
+.iconInput {
+    display: flex; /* Use flexbox for layout */
+    position: relative; /* Position relative for positioning child elements */
+    margin-bottom: 15px; /* Increased bottom margin */
+}
+
+/* Styling for input fields */
+.iconInput input {
+    width: 100%; /* Full width for input fields */
+    padding: 12px; /* Increased padding */
+    border: 1px solid #ccc; /* Light grey border */
+    border-radius: 12px; /* Rounded corners */
+    font-size: 16px; /* Font size for input fields */
+    transition: border-color 0.3s; /* Smooth transition for border color */
+}
+
+/* Input field focus styling */
+.iconInput input:focus {
+    border-color: #007aff; /* Border color when focused */
+    outline: none; /* Remove default outline */
+    box-shadow: 0 0 5px rgba(0, 122, 255, 0.5); /* Shadow effect on focus */
+}
+
+/* Error message styling */
+.text-danger {
+    color: red; /* Red color for error messages */
+    font-size: 14px; /* Increased font size for error messages */
+    margin-top: 5px; /* Space between the input and error message */
+}

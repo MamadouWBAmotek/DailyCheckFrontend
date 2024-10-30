@@ -7,8 +7,8 @@ import { GoogleUser } from './GoogleUser';
 interface AuthContextType {
     isauth: boolean; // Indicates if the user is authenticated
     setIsauth: (value: boolean) => void; // Function to update the authentication state
-    user?: User; //
-    setUser: (user: User|undefined) => void; // Function to set the logged-in user
+    user?: User | GoogleUser; // User object
+    setUser: (user: User | GoogleUser) => void; // Function to set the logged-in user
 }
 
 // Create the authentication context
@@ -17,24 +17,32 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Provider for the authentication context
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [isauth, setIsauth] = useState<boolean>(() => {
-        // Initialize state from cookie if it exists
-        return !!Cookies.get('isauth');
+        return Cookies.get('isauth') === 'true'; // Check if the cookie is "true"
     });
-    const [user, setUser] = useState<User|undefined>(() => {
-        // Retrieve user information from cookie if it exists
+
+    const [user, setUser] = useState<User | GoogleUser>(() => {
         const userCookie = Cookies.get('user');
-        return userCookie ? JSON.parse(userCookie) : undefined;
+        if (userCookie) {
+            try {
+                return JSON.parse(userCookie); // Try to parse the user cookie
+            } catch (error) {
+                console.error('Failed to parse user cookie:', error);
+                return undefined; // Return undefined if parsing fails
+            }
+        }
+        return undefined; // Return undefined if cookie doesn't exist
     });
 
     // Effect to handle side effects of authentication state changes
     useEffect(() => {
-        // Set or remove cookies based on authentication state
         if (isauth) {
-            Cookies.set('isauth', 'true'); // Set the cookie when authenticated
-            Cookies.set('user', JSON.stringify(user)); // Store user info in a cookie
+            Cookies.set('isauth', 'true');
+            if (user) {
+                Cookies.set('user', JSON.stringify(user)); // Check that user is not undefined
+            }
         } else {
-            Cookies.remove('isauth'); // Remove cookie when logged out
-            Cookies.remove('user'); // Remove user info cookie
+            Cookies.remove('isauth');
+            Cookies.remove('user');
         }
     }, [isauth, user]);
 

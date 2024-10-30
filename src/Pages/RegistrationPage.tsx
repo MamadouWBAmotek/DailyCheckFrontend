@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router'; // Use TanStack for navigation
 import styles from '../Styles/Registration.module.css'; // Import CSS module
 import { RegistrationViewModel } from '../Models/RegistrationViewModel';
-import { LoginWithGoogleViewModel } from '../Models/LoginWithGoogleViewModel';
-import { jwtDecode } from 'jwt-decode';
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 import { useAuth } from '../Components/Auth';
+import useGoogleLogin from '../Components/HandleGoogleLogin'; // Import the custom hook
+import InputField from '../Components/InputField'; // Utilise le composant InputField
+import SubmitButton from '../Components/SubmitButton'; // Utilise le composant SubmitButton
 
 const RegistrationPage: React.FC = () => {
     const [userName, setUserName] = useState<string>('');
@@ -14,8 +15,8 @@ const RegistrationPage: React.FC = () => {
     const [confirmPassword, setConfirmPassword] = useState<string>('');
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate(); // TanStack for navigation
-    const { setIsauth } = useAuth();
-
+    const { setIsauth, setUser, user } = useAuth();
+    const { handleGoogleLogin } = useGoogleLogin(navigate); // Use the custom hook for Google login
 
     // Handle form submission with async arrow function
     const handleSubmit = async (e: React.FormEvent): Promise<void> => {
@@ -43,57 +44,21 @@ const RegistrationPage: React.FC = () => {
                 body: JSON.stringify(model),
             });
 
+            const data = await response.json();
+
             if (response.ok) {
+                console.log("this  is the data", data.user);
+                setUser(data.user);
                 setIsauth(true);
                 setTimeout(() => {
                     navigate({ to: '/home' });
-                }, 0);
-                // Navigate to login page upon successful registration
-                navigate({ to: '/login' });
-            } else if (response.status === 400 || response.statusText === "Login! u already have an account") {
 
-                const result = await response.json();
-                setError(result.message || response.statusText);
+                }, 0);
+            } else {
+                setError(data.message);
             }
         } catch (err) {
             setError('An unexpected error occurred. Please try again later.');
-        }
-    };
-
-    const handleGoogleLogin = async (credentialResponse: any): Promise<void> => {
-        if (credentialResponse.credential) {
-            const googleOAuthResponse = jwtDecode<any>(credentialResponse.credential);
-
-            const googleOautData: LoginWithGoogleViewModel = {
-                Email: googleOAuthResponse.email,
-                username: googleOAuthResponse.given_name,
-                Id: googleOAuthResponse.sub,
-            };
-
-            try {
-                const response = await fetch('http://localhost:5144/api/login/loginwithgoogle', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(googleOautData),
-                });
-
-                if (!response.ok) {
-                    throw new Error('Something went wrong');
-                }
-                setIsauth(true);
-                setTimeout(() => {
-                    navigate({ to: '/home' });
-                }, 0);
-                // Redirect with TanStack, regardless of whether the user exists or not
-
-            } catch (error) {
-                setError('Error checking email. Please try again later.');
-                console.error('Error checking email:', error);
-            }
-        } else {
-            setError('No credential provided. Please try again.');
         }
     };
 
@@ -101,60 +66,46 @@ const RegistrationPage: React.FC = () => {
         <div className={styles.container}>
             <form onSubmit={handleSubmit}>
                 <legend className={styles.legend}>Register!</legend>
-                <label htmlFor="username"><b>Username:</b></label>
-                <div className={styles.iconInput}>
-                    <i className="fa-solid fa-user fa-xl"></i>
-                    <input
-                        type="text"
-                        value={userName}
-                        onChange={(e) => setUserName(e.target.value)}
-                        placeholder="Username"
-                        required
-                        autoFocus
-                    />
-                </div>
 
-                <label htmlFor="email"><b>Email:</b></label>
-                <div className={styles.iconInput}>
-                    <i className="fa-solid fa-envelope fa-xl"></i>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Email"
-                        required
-                    />
-                </div>
+                <label htmlFor="username" className={styles.label}><b>Username:</b></label>
+                <InputField
+                    type="text"
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)}
+                    placeholder="Username"
+                    required
+                />
 
-                <label htmlFor="password"><b>Password:</b></label>
-                <div className={styles.iconInput}>
-                    <i className="fa-solid fa-lock fa-xl"></i>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Password"
-                        required
-                    />
-                </div>
+                <label htmlFor="email" className={styles.label}><b>Email:</b></label>
+                <InputField
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email"
+                    required
+                    pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                />
 
-                <label htmlFor="confirmPassword"><b>Confirm Password:</b></label>
-                <div className={styles.iconInput}>
-                    <i className="fa-solid fa-lock fa-xl"></i>
-                    <input
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="Confirm Password"
-                        required
-                    />
-                </div>
+                <label htmlFor="password" className={styles.label}><b>Password:</b></label>
+                <InputField
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Password"
+                    required
+                />
 
-                <div className={styles.registerButton}>
-                    <button type="submit">Sign Up</button>
-                </div>
-
+                <label htmlFor="confirmPassword" className={styles.label}><b>Confirm Password:</b></label>
+                <InputField
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm Password"
+                    required
+                />
                 {error && <p className={styles.error}>{error}</p>}
+
+                <SubmitButton onClick={() => handleSubmit} label="Sign Up" />
             </form>
 
             <GoogleOAuthProvider clientId='593303417165-qptsgopn542rv2vosle4e43n9oagq12k.apps.googleusercontent.com'>

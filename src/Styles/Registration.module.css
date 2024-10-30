@@ -1,168 +1,92 @@
-/* Registration.module.css */
-
 /* Set global body styles */
-
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+}
 
 /* Container for the registration form */
 .container {
     display: flex;
     flex-direction: column;
     width: 50%;
-    margin: auto;
-    background: #F0F0F5;
-    /* White background for the container */
-    border-radius: 20px;
-    /* Rounded corners */
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    /* Soft shadow effect */
-    padding: 20px;
-    /* Internal spacing */
-    min-width: 600px;
-    /* Minimum width for the container */
-    transition: max-width 0.3s ease;
-    /* Smooth transition for width changes */
+    margin:  auto;
+    background: #dcdce6; /* Background color for the container */
+    border-radius: 20px; /* Rounded corners */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Soft shadow effect */
+    padding: 40px; /* Internal spacing */
+    min-width: 600px; /* Minimum width for the container */
+    transition: max-width 0.3s ease; /* Smooth transition for width changes */
 }
 
 /* Responsive styles for smaller screens */
 @media (max-width: 768px) {
     .container {
-        padding: 10px;
-        /* Reduced padding for small screens */
+        width: 90%; /* Make container more responsive on smaller screens */
+        padding: 20px; /* Adjust padding for smaller screens */
     }
 }
 
 /* Legend styling for the form title */
 .legend {
-    font-size: 28px;
-    /* Increased font size */
-    font-weight: bold;
-    /* Bold text */
-    text-align: center;
-    /* Center text */
-    margin-bottom: 20px;
-    /* Increased bottom margin */
+    font-size: 28px; /* Increased font size */
+    font-weight: bold; /* Bold text */
+    text-align: center; /* Center text */
+    margin-bottom: 20px; /* Increased bottom margin */
 }
 
 /* Label styling for input fields */
 .label {
-    font-size: 18px;
-    /* Increased font size for labels */
-    margin-bottom: 10px;
-    /* Increased bottom margin */
+    font-size: 18px; /* Increased font size for labels */
+    margin-bottom: 10px; /* Increased bottom margin */
 }
 
-/* Styling for input fields with icons */
-.iconInput {
-    display: flex;
-    /* Use flexbox for layout */
-    position: relative;
-    /* Position relative for positioning child elements */
-    margin-bottom: 30px;
-    /* Increased bottom margin */
-}
-
-/* Styling for input fields */
-.iconInput input {
-    width: 100%;
-    /* Full width for input fields */
-    padding: 10px;
-    /* Increased padding */
-    border: 1px solid #ccc;
-    /* Light grey border */
-    border-radius: 12px;
-    /* Rounded corners */
-    font-size: 16px;
-    /* Font size for input fields */
-    transition: border-color 0.3s;
-    /* Smooth transition for border color */
-}
-
-/* Input field focus styling */
-.iconInput input:focus {
-    border-color: #007aff;
-    /* Border color when focused */
-    outline: none;
-    /* Remove default outline */
-    box-shadow: 0 0 5px rgba(0, 122, 255, 0.5);
-    /* Shadow effect on focus */
-}
 
 /* Error message styling */
-.errorMessage {
-    color: red;
-    /* Red color for error messages */
-    font-size: 14px;
-    /* Increased font size for error messages */
-    margin-top: 10px;
-    /* Increased top margin */
+.error {
+    color: red; /* Color for error messages */
+    margin-top: 10px; /* Margin for spacing */
 }
 
-/* Button container styling */
-.registerButton {
-    text-align: center;
-    /* Center the button */
+/* Button styling */
+button {
+    background-color: #4B6584; /* Background color for button */
+    color: white; /* Text color for button */
+    border: none; /* No border */
+    border-radius: 4px; /* Rounded corners */
+    padding: 10px 15px; /* Padding for button */
+    font-size: 16px; /* Font size for button */
+    cursor: pointer; /* Cursor style */
+    transition: background-color 0.3s; /* Transition for hover effect */
 }
 
-/* Styling for the register button */
-.registerButton button {
-    background-color: #007aff;
-    /* Background color for the button */
-    color: white;
-    /* Text color for the button */
-    padding: 12px;
-    /* Increased padding */
-    border: none;
-    /* Remove default border */
-    border-radius: 12px;
-    /* Rounded corners for the button */
-    cursor: pointer;
-    /* Change cursor to pointer */
-    font-size: 16px;
-    /* Font size for the button */
-    transition: background-color 0.3s;
-    /* Smooth transition for background color */
-}
-
-/* Hover effect for the register button */
-.registerButton button:hover {
-    background-color: #005bb5;
-    /* Darker color on hover */
+/* Button hover effect */
+button:hover {
+    background-color: #3A5167; /* Darker background on hover */
 }
 
 /* Google sign-in section styling */
 .googlesignindiv {
     display: flex;
-    /* Use flexbox for layout */
     align-items: center;
-    /* Align items center */
-    flex-direction: column;
-    /* Stack items vertically */
+    flex-direction: column; /* Stack items vertically */
     text-align: center;
-    /* Center text */
-    margin: 10px auto;
-    /* Increased vertical margins and center horizontally */
+    margin: 10px auto; /* Center the section */
 }
 
 /* Login link section styling */
 .logindiv {
-    text-align: center;
-    /* Center text */
-    margin-top: 20px;
-    /* Increased top margin */
+    padding-top: 15px;
+    text-align: center; /* Center text */
+    
 }
 
 /* Login link styling */
 .logindiv a {
-    color: #007aff;
-    /* Link color */
-    text-decoration: none;
-    /* Remove underline from link */
-    font-size: 16px;
-    /* Font size for the link */
+    color: #007aff; /* Link color */
+    text-decoration: none; /* Remove underline from link */
+    font-size: 16px; /* Font size for the link */
 }
 
 /* Hover effect for the login link */
 .logindiv a:hover {
-    text-decoration: underline;
-    /* Underline on hover */
+    text-decoration: underline; /* Underline on hover */
 }

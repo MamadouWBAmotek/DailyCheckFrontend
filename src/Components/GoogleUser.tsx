@@ -2,7 +2,7 @@ import { Role } from "./Roles";
 
 export interface GoogleUser {
     id: string;
-    username: string;
+    userName: string;
     email: string;
     role: Role;
 }

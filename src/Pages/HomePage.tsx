@@ -4,18 +4,18 @@ import { Status } from '../Models/Status';
 import styles from '../Styles/Home.module.css'; // Importation des styles CSS Modules
 import { useAuth } from '../Components/Auth';
 import { ToDoViewModel } from '../Models/ToDoViewModel';
-import { METHODS } from 'http';
-import { json } from 'stream/consumers';
-import { User } from '../Components/User';
+import { useFetchTodosByStatus } from '../Hooks/useFetchTodos';
+import Logout from '../Components/Logout';
 import { faUser } from '@fortawesome/free-solid-svg-icons';
-import Cookies from 'js-cookie';
-import { useNavigate } from '@tanstack/react-router';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import TodoDetailsModal from '../Components/TodoDetailsModal';
+import CreateTodoModal from '../Components/CreateTodoModal';
+import UserModal from '../Components/UserModal';
+import ToDoItem from '../Components/ToDoItem';
 
 
 const HomePage: React.FC = () => {
-    const [todos, setTodos] = useState<ToDo[]>([]);
-    const [sortToDos, setSortToDos] = useState<string>('');
+
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isToDoModalOpen, setIsToDoModalOpen] = useState(false);
     const [isUserModalOpen, setIsUserModalOpen] = useState(false);
@@ -25,151 +25,25 @@ const HomePage: React.FC = () => {
     const [description, setDescription] = useState<string>('');
     const [deadline, setDeadline] = useState<string>('');
     const [status, setStatus] = useState<Status>(Status.Upcoming);
-    const [isUpcoming, setIsUpcoming] = useState(false);
     const [isDone, setIsDone] = useState(false);
     const [isCancelled, setIsCancelled] = useState(false);
-    const navigate = useNavigate();
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false); // Adding a loading indicator
-    const { user, setIsauth } = useAuth();
-    const [localUser, setLocalUser] = useState<User>();
+    const { user, setIsauth, setUser } = useAuth();
     const inputRef = useRef<HTMLInputElement>(null);
+    const [triggerUpdate, setTriggerUpdate] = useState(false);
 
-    useEffect(() => {
-        fetchTodos();
-        // Initial call to fetch To-Dos
-    }, []);
+    ///modifacations
+    const [userId] = useState(String(user?.id)); // Remplacez 'user123' par l'ID utilisateur approprié
+    const [toFetchStatus, setToFetchStatus] = useState<Status | undefined>(undefined);
+    const { todos, Fetchingrror } = useFetchTodosByStatus({ userId, toFetchStatus, triggerUpdate });
 
-    // Function to fetch To-Dos with a status filter
-    const fetchTodos = async () => {
-        setSortToDos('');
-        setIsDone(false);
-        setIsCancelled(false);
-        setIsLoading(true); // Start loading
 
-        try {
-            const response = await fetch('http://localhost:5144/api/todo/todos/all-todos', {
-                method: 'POST',
-                headers: { 'content-type': 'application/json' },
-                body: JSON.stringify(String(user?.id))
-
-            });
-            const data = await response.json();
-            if (response.status === 404 && data.message == "No To-Dos found.") {
-                setError("No To-Dos found.");
-                setTodos(data.todos);
-                console.error(error);
-                throw new Error("No To-Dos found.");
-            }
-            setTodos(data.todos);
-            setError(null); // Reset errors
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setIsLoading(false); // End loading
-        }
+    const handleStatusChange = (selectedStatus: Status | undefined) => {
+        setToFetchStatus(selectedStatus);
+        console.log(status)
     };
-
-    const handleLogout = async () => {
-        setIsauth(false); // Update authentication state
-        setUser(undefined); // Clear user state
-        Cookies.remove('isauth'); // Remove authentication cookie
-        Cookies.remove('user'); // Remove user cookie
-        navigate({ to: '/login' }); // Redirect to the home page or login page
-    };
-
-    const fetchUpcomingTodos = async () => {
-        setSortToDos("Upcoming");
-        setIsLoading(true);
-        setIsDone(false);
-        setIsCancelled(false);
-        setIsUpcoming(true);
-        try {
-            const response = await fetch('http://localhost:5144/api/todo/todos/upcoming', {
-                method: 'POST',
-                headers: { 'content-type': 'application/json' },
-                body: JSON.stringify(String(user?.id))
-
-            });
-            const data = await response.json();
-
-            if (response.status === 404 && data.message == "No upcoming To-Dos found.") {
-                setError("No upcoming To-Dos found.");
-                setTodos(data.todos);
-                console.error(error);
-                throw new Error("No upcoming To-Dos found.");
-            }
-            setTodos(data.todos);
-
-            setError(null); // Reset errors
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setIsLoading(false); // End loading
-        }
-    };
-
-    const fetchDoneTodos = async () => {
-        setSortToDos('Done');
-        setIsLoading(true);
-        setIsCancelled(false);
-        setIsDone(true);
-        try {
-            const response = await fetch('http://localhost:5144/api/todo/todos/done', {
-                method: 'POST',
-                headers: { 'content-type': 'application/json' },
-                body: JSON.stringify(String(user?.id))
-
-            });
-            const data = await response.json();
-
-            if (response.status === 404 && data.message == "No done To-Dos found.") {
-                setError("No done To-Dos found.");
-                setTodos(data.todos);
-                console.error(error);
-                throw new Error("No done To-Dos found.");
-            }
-            setTodos(data.todos);
-            setError(null); // Reset errors
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setIsLoading(false); // End loading
-        }
-
-
-    };
-
-    const fetchCancelledTodos = async () => {
-        setSortToDos('Cancelled');
-        setIsDone(false);
-        setIsLoading(true);
-        setIsCancelled(true);
-        try {
-            const response = await fetch('http://localhost:5144/api/todo/todos/cancelled', {
-                method: 'POST',
-                headers: { 'content-type': 'application/json' },
-                body: JSON.stringify(String(user?.id))
-
-            });
-            const data = await response.json();
-
-            if (response.status === 404 && data.message == "No cancelled To-Dos found.") {
-                setError("No cancelled To-Dos found.");
-                throw new Error("No cancelled To-Dos found.");
-                console.error(error);
-            }
-            setTodos(data.todos);
-
-            setError(null); // Reset errors
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setIsLoading(false); // End loading
-        }
-    };
-
     // Close the modal
     const closeModal = () => {
         setIsCreateModalOpen(false);
@@ -204,16 +78,21 @@ const HomePage: React.FC = () => {
             const data = await response.json();
 
             if (response.ok) {
-                closeModal(); // Close the modal after creation
+                // Close the modal after creation
                 setSuccess(`To-Do "${data.todo.title}" created successfully!`);
+
+
                 setTimeout(() => {
-                    setSuccess("");
-                }, 2000);
-                fetchTodos(); // Refresh the To-Dos list
-            } else if (response.status == 400 && data.message == "The deadline cannot be in the past.") {
+                    closeModal();
+                    setTriggerUpdate(true);
+                }, 1000);
+
+            }
+            else if (response.status == 400 && data.message == "The deadline cannot be in the past.") {
                 console.log("the deadline is the past");
                 setError("The deadline cannot be in the past.");
-            } else {
+            }
+            else {
                 const errorData = await response.json();
                 setError(errorData.message || 'Failed to create To-Do');
             }
@@ -238,90 +117,66 @@ const HomePage: React.FC = () => {
     };
 
     const handleDeleteTodo = async (todo: ToDo) => {
+
+        const confirmChange = window.confirm('Are you sure you want to change the status of this To-Do?');
+        if (!confirmChange) return;
+        setIsLoading(true);
+
         try {
-            const response = await fetch('http://localhost:5144/api/todo/todos/delete', {
+            const response = await fetch('http://localhost:5144/api/todo/delete', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(todo),
             });
-
+            const data = await response.json();
             if (response.ok) {
                 closeToDoModal();
                 setSuccess(`To-Do "${todo.title}" deleted successfully!`);
             }
 
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                setError(`Error: ${error.message}`);
-            } else {
-                setError('Unknown error occurred while deleting the To-Do.');
-            }
+        } catch (error) {
+            setError('Error deleting todo!'); // Gère les erreurs lors de la requête.
+        } finally {
+            setIsLoading(false); // Arrête l'indicateur de chargement.
         }
     };
 
+    const handleChangeStatus = async (todoId: number, newStatus: Status) => {
+        const confirmChange = window.confirm('Are you sure you want to change the status of this To-Do?');
+        if (!confirmChange) return; // Si l'utilisateur annule, on sort de la fonction.
 
-    const handleChangeStatusToCancelled = async (todoId: number) => {
-        const confirmCancel = window.confirm('Are you sure you want to cancel this To-Do?');
-        if (!confirmCancel) return;
+        setIsLoading(true); // Démarre l'indicateur de chargement.
 
-        setIsLoading(true);
-
-        try {
-            const response = await fetch('http://localhost:5144/api/todo/cancel', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(todoId),
-            });
-
-            const data = await response.json();
-            console.log(data.message)
-            if (response.status == 400 && data.message === "To-Do item already cancelled") {
-                setError("To-Do item already cancelled");
-                closeToDoModal();
-            } else if (response.ok) {
-                setSuccess("To-Do's status successfully changed to cancelled!");
-                fetchCancelledTodos();
-                closeToDoModal();
-            } else {
-                const errorData = await response.json();
-                setError(errorData.message || 'Failed to cancel To-Do');
-            }
-        } catch (error) {
-            setError('Error cancelling To-Do.');
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleChangeStatusToDone = async (todoId: number) => {
-        const confirmDone = window.confirm('Are you sure you want to mark this To-Do as done?');
-        if (!confirmDone) return;
-
-        setIsLoading(true);
+        const requestBody = {
+            TodoId: todoId,
+            NewStatus: newStatus,
+        };
 
         try {
-            const response = await fetch('http://localhost:5144/api/todo/done', {
+            const response = await fetch('http://localhost:5144/api/todo/changestatus', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(todoId),
+                body: JSON.stringify(requestBody),
             });
+            console.log(requestBody);
+            const data = await response.json(); // Récupère la réponse JSON.
 
-            const data = await response.json();
-            if (response.ok && data.message === "To-Do item already done") {
-                setError("To-Do item already done");
-                closeToDoModal();
+            // Gestion des réponses en fonction du statut
+            if (response.status === 400 && data.message === "To-Do item already cancelled") {
+                setError("To-Do item already cancelled"); // Message d'erreur spécifique.
             } else if (response.ok) {
-                setSuccess("To-Do's status successfully changed to done!");
-                fetchDoneTodos();
-                closeToDoModal();
+                setSuccess("To-Do's status successfully changed!");
+                closeToDoModal(); // Ferme le modal si l'opération réussit.
+                // Vous pouvez ici recharger les To-Dos si nécessaire.
+
             } else {
-                const errorData = await response.json();
-                setError(errorData.message || 'Failed to mark To-Do as done');
+                // Si la réponse n'est pas ok, affiche une erreur générale.
+                setError(data.message || 'Failed to change To-Do status');
             }
         } catch (error) {
-            setError('Error changing To-Do status to done.');
+            setError('Error changing To-Do status.'); // Gère les erreurs lors de la requête.
         } finally {
-            setIsLoading(false);
+            setIsLoading(false); // Arrête l'indicateur de chargement.
         }
     };
 
@@ -331,7 +186,7 @@ const HomePage: React.FC = () => {
         const formattedDeadline = new Date(todo.deadline).toISOString()
 
         try {
-            const response = await fetch('http://localhost:5144/api/todo/todos/update', {
+            const response = await fetch('http://localhost:5144/api/todo/update', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(todo),
@@ -339,7 +194,6 @@ const HomePage: React.FC = () => {
 
             if (response.ok) {
                 setSuccess(`To-Do "${todo.title}" updated successfully!`);
-                fetchTodos();
                 closeToDoModal();
             } else {
                 const errorData = await response.json();
@@ -365,101 +219,58 @@ const HomePage: React.FC = () => {
                 <div className={styles.sidebar}>
                     <h3>ToDo's</h3>
                     <ul>
-                        <li onClick={() => fetchTodos()}>All ToDos</li>
-                        <li onClick={() => fetchUpcomingTodos()}>Upcoming</li>
-                        <li onClick={() => fetchDoneTodos()}>Done ToDos</li>
-                        <li onClick={() => fetchCancelledTodos()}>Cancelled ToDos</li>
+                        <li onClick={() => handleStatusChange(undefined)}>All ToDos</li>
+                        <li onClick={() => handleStatusChange(Status.Upcoming)}>Upcoming</li>
+                        <li onClick={() => handleStatusChange(Status.Done)}>Done ToDos</li>
+                        <li onClick={() => handleStatusChange(Status.Cancelled)}>Cancelled ToDos</li>
                     </ul>
                 </div>
 
                 <div className={styles['main-content']}>
+                    <h1>My {toFetchStatus !== undefined ? Status[toFetchStatus] : ""} To-Dos</h1>
+
                     {isLoading && <p>Loading...</p>}
-                    {error && <div className={styles.error}>{error}</div>}
+                    {Fetchingrror && <p style={{ color: 'red' }}>{Fetchingrror}</p>}
                     {success && <div className={styles.success}>{success}</div>}
 
-                    <h1>My {sortToDos} To-Dos</h1>
                     <ul className={styles['todo-list']}>
-                        {todos.map((todo) => (
-                            <li key={todo.id}>
-                                <button className={styles['todo-item']} onClick={() => ShowTodoDetails(todo)}>
-                                    <h1>{todo.title}</h1>
-                                    <div className={styles['todoitem-content']}>
-
-                                        <p>{todo.description}</p>
-                                        <p>{new Date(todo.deadline).toLocaleString()}</p>
-                                    </div>
-                                </button>
-                            </li>
-                        ))}
+                        {todos.length > 0 ? (
+                            todos.map(todo => (
+                                <ToDoItem key={todo.id} todo={todo} onClick={() => ShowTodoDetails(todo)} />
+                            ))
+                        ) : (
+                            <p>No To-Dos found.</p>
+                        )}
                     </ul>
 
-                    {isToDoModalOpen && selectedTodo && (
-                        <div className={styles.modal}>
-                            <div className={styles['modal-content']}>
-                                <span className={styles.close} onClick={closeToDoModal}>&times;</span>
-                                <form>
-                                    <h3>{isEditing ? 'Edit To-Do' : 'To-Do Details'}</h3>
-                                    <input
-                                        type="text"
-                                        value={selectedTodo?.title || ''}
-                                        onChange={(e) => setSelectedTodo({ ...selectedTodo, title: e.target.value })}
-                                        disabled={!isEditing}
-                                    />
-                                    <input
-                                        type="text"
-                                        value={selectedTodo.description}
-                                        onChange={(e) => setSelectedTodo({ ...selectedTodo, description: e.target.value })}
-                                        disabled={!isEditing}
-                                    />
-                                    <input
-                                        type="datetime-local"
-                                        value={new Date(selectedTodo.deadline).toISOString().slice(0, 16)}
-                                        onChange={(e) => setSelectedTodo({ ...selectedTodo, deadline: e.target.value })}
-                                    />
+                    <CreateTodoModal
+                        isOpen={isCreateModalOpen}
+                        closeModal={closeModal}
+                        title={title}
+                        setTitle={setTitle}
+                        description={description}
+                        setDescription={setDescription}
+                        deadline={deadline}
+                        setDeadline={setDeadline}
+                        handleCreateTodo={handleCreateTodo}
+                    />
 
-                                    <div className={styles['button-container']}>
-                                        {isEditing ? (
-                                            <>
-                                                <button className={styles['save']} onClick={() => handleUpdateTodo(selectedTodo)}>Save</button>
-                                                <button className={styles['cancel']} onClick={() => setIsEditing(false)}>Cancel</button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <button className={styles['delete']} onClick={() => handleDeleteTodo(selectedTodo)}>Delete</button>
-                                                {!isCancelled && <button className={styles['cancel']} onClick={() => handleChangeStatusToCancelled(selectedTodo.id)}>Cancel</button>}
-                                                <button className={styles['edit']} onClick={() => setIsEditing(true)}>Edit</button>
-                                                {!isDone && <button className={styles['save']} onClick={() => handleChangeStatusToDone(selectedTodo.id)}>Done</button>}
-                                            </>
-                                        )}
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    )}
-
-                    {isCreateModalOpen && (
-                        <div className={styles.modal}>
-                            <div className={styles['modal-content']}>
-                                <span className={styles.close} onClick={closeModal}>&times;</span>
-                                <form onSubmit={handleCreateTodo}>
-                                    <h3>Create To-Do</h3>
-                                    <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
-                                    <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} required />
-                                    <input type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} required />
-                                    <button type="submit">Create</button>
-                                </form>
-                            </div>
-                        </div>
-                    )}
-                    {isUserModalOpen && (
-                        <div className={styles.usermodelmodal}>
-                            <span className={styles.close} onClick={() => setIsUserModalOpen(false)}>&times;</span>
-                            <div className={styles['usermodal-content']}>
-                                <h1>{user?.userName}</h1>
-                                <button onClick={() => handleLogout()}>Logout</button>
-                            </div>
-                        </div>
-                    )}
+                    <TodoDetailsModal
+                        isOpen={isToDoModalOpen}
+                        closeModal={closeToDoModal}
+                        selectedTodo={selectedTodo}
+                        isEditing={isEditing}
+                        setIsEditing={setIsEditing}
+                        handleUpdateTodo={handleUpdateTodo}
+                        handleDeleteTodo={handleDeleteTodo}
+                        handleChangeStatus={handleChangeStatus}
+                        setSelectedTodo={setSelectedTodo} // Ajoutez cette ligne
+                    />
+                    <UserModal
+                        isOpen={isUserModalOpen}
+                        closeModal={() => setIsUserModalOpen(false)}
+                        userName={user?.userName}
+                    />
                 </div>
             </div>
         </div>
@@ -468,7 +279,5 @@ const HomePage: React.FC = () => {
 };
 
 export default HomePage;
-function setUser(undefined: undefined) {
-    throw new Error('Function not implemented.');
-}
+
 
