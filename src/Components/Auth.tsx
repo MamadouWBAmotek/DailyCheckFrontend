@@ -7,8 +7,8 @@ import { GoogleUser } from './GoogleUser';
 interface AuthContextType {
     isauth: boolean; // Indicates if the user is authenticated
     setIsauth: (value: boolean) => void; // Function to update the authentication state
-    user?: User | GoogleUser; // User object
-    setUser: (user: User | GoogleUser) => void; // Function to set the logged-in user
+    user?: User | GoogleUser | undefined; // User object
+    setUser: (user: User | GoogleUser | undefined) => void; // Function to set the logged-in user
 }
 
 // Create the authentication context
@@ -20,7 +20,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return Cookies.get('isauth') === 'true'; // Check if the cookie is "true"
     });
 
-    const [user, setUser] = useState<User | GoogleUser>(() => {
+    const [user, setUser] = useState<User | GoogleUser | undefined>(() => {
         const userCookie = Cookies.get('user');
         if (userCookie) {
             try {

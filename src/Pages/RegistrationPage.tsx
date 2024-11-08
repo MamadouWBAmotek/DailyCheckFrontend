@@ -47,7 +47,6 @@ const RegistrationPage: React.FC = () => {
             const data = await response.json();
 
             if (response.ok) {
-                console.log("this  is the data", data.user);
                 setUser(data.user);
                 setIsauth(true);
                 setTimeout(() => {

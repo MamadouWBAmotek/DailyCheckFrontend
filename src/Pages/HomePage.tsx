@@ -12,15 +12,35 @@ import TodoDetailsModal from '../Components/TodoDetailsModal';
 import CreateTodoModal from '../Components/CreateTodoModal';
 import UserModal from '../Components/UserModal';
 import ToDoItem from '../Components/ToDoItem';
+import { Role } from '../Models/Roles';
+import { User } from '../Components/User';
+import UserItem from '../Components/UserItem';
+import UserDetailsModal from '../Components/UserDetails';
+import CreateUserModal from '../Components/CreateUserModal';
+import { registerUser } from '../Utils/RegisterUser';
 
 
 const HomePage: React.FC = () => {
 
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
+
     const [isToDoModalOpen, setIsToDoModalOpen] = useState(false);
     const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+    const [isUserDetailsModalOpen, setIsUserDetailsModalOpen] = useState(false);
+    const [disableCreateButton, setDisableCreateButton] = useState(false);
+
     const [selectedTodo, setSelectedTodo] = useState<ToDo | null>(null);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [isUserEditing, setIsUserEditing] = useState<boolean>(false);
+
+    const [userName, setUserName] = useState<string>('');
+    const [email, setEmail] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
+    const [confirmPassword, setConfirmPassword] = useState<string>('');
+    const [role, setRole] = useState<Role>(Role.User);
+
     const [title, setTitle] = useState<string>('');
     const [description, setDescription] = useState<string>('');
     const [deadline, setDeadline] = useState<string>('');
@@ -33,19 +53,46 @@ const HomePage: React.FC = () => {
     const { user, setIsauth, setUser } = useAuth();
     const inputRef = useRef<HTMLInputElement>(null);
     const [triggerUpdate, setTriggerUpdate] = useState(false);
+    const [isAdminUser, setIsAdminUser] = useState(false);
+    const [showUsersTodosOnly, setShowUsersTodosOnly] = useState(false);
+    const [showUsersOnly, setShowUsersOnly] = useState(false);
 
-    ///modifacations
-    const [userId] = useState(String(user?.id)); // Remplacez 'user123' par l'ID utilisateur approprié
+    const [userId] = useState(String(user?.id));
+    const [userStatus] = useState(user?.role);
     const [toFetchStatus, setToFetchStatus] = useState<Status | undefined>(undefined);
-    const { todos, Fetchingrror } = useFetchTodosByStatus({ userId, toFetchStatus, triggerUpdate });
+    const { usersTodos, Fetchingrror, allTodos, users } = useFetchTodosByStatus({ userId, toFetchStatus, triggerUpdate, userStatus });
+    const [todosUserId, setTodosUserId] = useState<string>('');
+    // const [users, setUsers] = useState<User[]>([]);
+    const [showUsers, setShowUsers] = useState(false);
+    useEffect(() => {
+        if (user?.role == 0) setIsAdminUser(true)
+    }, [user]);
 
 
     const handleStatusChange = (selectedStatus: Status | undefined) => {
+        if (selectedStatus == undefined) {
+            setShowUsersTodosOnly(false)
+            setShowUsers(false)
+            setShowUsersOnly(false)
+        }
+
+        else if (selectedStatus == Status.Users) {
+            setShowUsers(true)
+            setShowUsersTodosOnly(false)
+            setShowUsersOnly(true)
+
+        }
+        else {
+            setShowUsers(false)
+            setShowUsersOnly(false)
+
+        }
         setToFetchStatus(selectedStatus);
         console.log(status)
     };
     // Close the modal
     const closeModal = () => {
+        setDisableCreateButton(false);
         setIsCreateModalOpen(false);
         setTitle('');
         setDescription('');
@@ -56,18 +103,20 @@ const HomePage: React.FC = () => {
 
     // Handling the creation of a new To-Do
     const handleCreateTodo = async (e: React.FormEvent): Promise<void> => {
-        e.preventDefault();
         if (!title || !description || !deadline) {
             setError('Please fill in all fields');
         }
+        console.log("this is in the methode");
 
         const formattedDeadline = new Date(deadline).toISOString();
         const model: ToDoViewModel = {
             Title: title,
             Description: description,
+            UserEmail: user?.email.toString() || '', // Use user ID from context
             UserId: user?.id.toString() || '', // Use user ID from context
             Deadline: formattedDeadline,
         };
+        console.log("this is the model", model);
 
         try {
             const response = await fetch('http://localhost:5144/api/todo/create', {
@@ -103,18 +152,146 @@ const HomePage: React.FC = () => {
                 setError('Unknown error occurred.');
             }
         }
+        finally {
+            setDisableCreateButton(false);
+
+        }
     };
 
     const ShowTodoDetails = (todo: ToDo) => {
+        setDisableCreateButton(true)
         setSelectedTodo(todo); // Set the selected To-Do
         setIsEditing(false);
         setIsToDoModalOpen(true); // Open the modal
+        // setTodosUserId(todo.userId)
+        getUserbyTodosUserId(todo.userEmail);
+    };
+    const ShowUserDetails = (user: User) => {
+        setDisableCreateButton(true);
+        setSelectedUser(user); // Set the selected To-Do
+        setIsEditing(false);
+        setIsUserDetailsModalOpen(true); // Open the modal
+        // setTodosUserId(todo.userId)
+    };
+    const getUserbyTodosUserId = async (todosUserId: string) => {
+        console.log("its been called");
+
+        setIsLoading(true); // Active l'indicateur de chargement.
+        try {
+            const response = await fetch('http://localhost:5144/api/login/users/user', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: todosUserId.toString() })
+            });
+            const data = await response.json();
+            console.log(data);
+            if (response.ok) {
+                // L'utilisateur ou l'utilisateur Google a été trouvé
+                console.log('User found:', data);
+                setTodosUserId(data.userName)
+                console.log(data.userName) // Remplacez ceci par l'action que vous souhaitez effectuer avec les données utilisateur.
+            } else {
+                // Gère le cas où l'utilisateur n'est pas trouvé
+                setError(data.message || 'User not found.');
+            }
+        } catch (error) {
+            setError('Error fetching user information!'); // Gère les erreurs lors de la requête.
+        } finally {
+            setIsLoading(false); // Arrête l'indicateur de chargement.
+        }
+    };
+
+    // const getUsers = async () => {
+    //     setShowUsers(true);
+    //     try {
+    //         const response = await fetch(`http://localhost:5144/api/login/users`, {
+    //             method: 'GET',
+    //             headers: { 'Content-Type': 'application/json' },
+    //         });
+
+    //         const data = await response.json();
+
+    //         if (response.ok) {
+    //             // L'utilisateur ou l'utilisateur Google a été trouvé
+    //             console.log('User found:', data);
+    //             const allUsers = [data.users + data.googleUsers]
+    //             console.log(allUsers);
+    //             setUsers([...data.users, ...data.googleUsers]);
+    //             console.log("these are all the users", users) // Remplacez ceci par l'action que vous souhaitez effectuer avec les données utilisateur.
+    //         } else {
+    //             // Gère le cas où l'utilisateur n'est pas trouvé
+    //             setError(data.message || 'User not found.');
+    //         }
+    //     } catch (error) {
+    //         setError('Error fetching user information!'); // Gère les erreurs lors de la requête.
+    //     } finally {
+    //         setIsLoading(false); // Arrête l'indicateur de chargement.
+    //     }
+    // }
+
+    const handleUpdateUser = async (user: User) => {
+        try {
+            const response = await fetch('http://localhost:5144/api/login/update', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(user),
+            });
+
+            if (response.ok) {
+                setSuccess(`To-Do "${user.userName}" updated successfully!`);
+            } else {
+                const errorData = await response.json();
+                setError(errorData.message || 'Failed to update To-Do');
+            }
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                setError(`Error: ${error.message}`);
+            } else {
+                setError('Unknown error occurred.');
+            }
+        }
+    }
+
+    const handleDeleteUser = async (user: User) => {
+        const confirmChange = window.confirm('Are you sure you want to DELETE this user?');
+        if (!confirmChange) return;
+
+        setIsLoading(true);
+
+        try {
+            // Vérification du corps de la requête
+            const requestBody = { userId: user.id.toString() };
+            console.log("Request body:", requestBody);
+
+            const response = await fetch('http://localhost:5144/api/login/delete', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody), // Assurez-vous que le format est correct
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setIsUserDetailsModalOpen(false);
+                setTimeout(() => {
+                    setSuccess(`User "${user.userName}" deleted successfully!`);
+
+                }, 2000);
+            } else {
+                const errorData = await response.json();
+                setError(errorData.message || 'Error deleting user!');
+            }
+        } catch (error) {
+            console.error(error);
+            setError('Error deleting user!');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
 
-    const closeToDoModal = () => {
-        setIsToDoModalOpen(false);
-    };
+
+
+
 
     const handleDeleteTodo = async (todo: ToDo) => {
 
@@ -130,7 +307,7 @@ const HomePage: React.FC = () => {
             });
             const data = await response.json();
             if (response.ok) {
-                closeToDoModal();
+                setIsToDoModalOpen(false);
                 setSuccess(`To-Do "${todo.title}" deleted successfully!`);
             }
 
@@ -166,7 +343,8 @@ const HomePage: React.FC = () => {
                 setError("To-Do item already cancelled"); // Message d'erreur spécifique.
             } else if (response.ok) {
                 setSuccess("To-Do's status successfully changed!");
-                closeToDoModal(); // Ferme le modal si l'opération réussit.
+                setIsToDoModalOpen(false);
+                // Ferme le modal si l'opération réussit.
                 // Vous pouvez ici recharger les To-Dos si nécessaire.
 
             } else {
@@ -179,12 +357,40 @@ const HomePage: React.FC = () => {
             setIsLoading(false); // Arrête l'indicateur de chargement.
         }
     };
+    const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
 
+        setDisableCreateButton(true);
+        if (e.target === e.currentTarget) {
+            if (isCreateModalOpen == true) {
+                setIsCreateModalOpen(false);
+                setDisableCreateButton(false);
+
+            }
+            else if (isCreateUserModalOpen == true) {
+                setIsCreateUserModalOpen(false);
+                setDisableCreateButton(false);
+
+            }
+            else if (isToDoModalOpen == true) {
+                setIsToDoModalOpen(false);
+                setDisableCreateButton(false);
+
+            }
+            else if (isUserModalOpen == true) {
+                setIsUserModalOpen(false)
+                setDisableCreateButton(false);
+            }
+            else {
+                setIsUserDetailsModalOpen(false);
+                setDisableCreateButton(false);
+
+            }
+        }
+    };
     const handleUpdateTodo = async (todo: ToDo) => {
 
-        console.log(todo);
         const formattedDeadline = new Date(todo.deadline).toISOString()
-
+        todo.deadline = formattedDeadline;
         try {
             const response = await fetch('http://localhost:5144/api/todo/update', {
                 method: 'PUT',
@@ -194,7 +400,7 @@ const HomePage: React.FC = () => {
 
             if (response.ok) {
                 setSuccess(`To-Do "${todo.title}" updated successfully!`);
-                closeToDoModal();
+                setIsToDoModalOpen(false);
             } else {
                 const errorData = await response.json();
                 setError(errorData.message || 'Failed to update To-Do');
@@ -211,67 +417,158 @@ const HomePage: React.FC = () => {
     return (
         <div className={styles.homepage}>
             <div className={styles.header}>
-                <button onClick={() => setIsCreateModalOpen(true)}>Create To-Do</button>
-                <button onClick={() => setIsUserModalOpen(true)}><FontAwesomeIcon icon={faUser}></FontAwesomeIcon></button>
+                <h1>Daily Check</h1>
+                <button onClick={() => { setIsUserModalOpen(true) }}><FontAwesomeIcon icon={faUser}></FontAwesomeIcon></button>
+                <div className={styles['main-content-header']}>
+                    {!showUsers ?
+                        <h1>{showUsersTodosOnly ? <span> My </span> : <span> All </span>}  {toFetchStatus != undefined && toFetchStatus != Status.Users ? Status[toFetchStatus] : ""} To-Dos</h1>
+                        : <h1>Users</h1>}
+                    {isLoading && <p>Loading...</p>}
+                    {Fetchingrror && <p style={{ color: 'red' }}>{Fetchingrror}</p>}
+                    {success && <div className={styles.success}>{success}</div>}
+                    {!showUsers ? <button className={styles['main-content-createButton']} onClick={() => { setIsCreateModalOpen(true); }}>Create To-Do</button>
+                        : <button type='button' className={styles['main-content-createButton']} onClick={() => { setIsCreateUserModalOpen(true); }}>Create User</button>}
+
+
+                </div>
             </div>
 
             <div className={styles['main-container']}>
                 <div className={styles.sidebar}>
-                    <h3>ToDo's</h3>
+
                     <ul>
-                        <li onClick={() => handleStatusChange(undefined)}>All ToDos</li>
+                        <li onClick={() => handleStatusChange(undefined)} >All ToDos</li>
+                        {user?.role === Role.Admin && (
+                            <li>
+                                <label className="switch">
+                                    <span className="slider"></span>
+                                    <span className="slider-label">Show my todos only</span>
+                                    <input
+                                        type="checkbox"
+                                        className={styles['switch']}
+                                        checked={showUsersTodosOnly}
+                                        onChange={() => { setShowUsersTodosOnly((prev) => !prev); setShowUsers(false); }}
+                                    // disabled={showUsers}
+                                    />
+
+                                </label>
+                            </li>
+
+
+                        )}
                         <li onClick={() => handleStatusChange(Status.Upcoming)}>Upcoming</li>
                         <li onClick={() => handleStatusChange(Status.Done)}>Done ToDos</li>
                         <li onClick={() => handleStatusChange(Status.Cancelled)}>Cancelled ToDos</li>
-                    </ul>
-                </div>
+                        {user?.role === Role.Admin && (
+                            <li
+                                onClick={() => handleStatusChange(Status.Users)}
+                            // aria-disabled={showUsersTodosOnly}
+                            >Get Users
+                            </li>
 
-                <div className={styles['main-content']}>
-                    <h1>My {toFetchStatus !== undefined ? Status[toFetchStatus] : ""} To-Dos</h1>
 
-                    {isLoading && <p>Loading...</p>}
-                    {Fetchingrror && <p style={{ color: 'red' }}>{Fetchingrror}</p>}
-                    {success && <div className={styles.success}>{success}</div>}
-
-                    <ul className={styles['todo-list']}>
-                        {todos.length > 0 ? (
-                            todos.map(todo => (
-                                <ToDoItem key={todo.id} todo={todo} onClick={() => ShowTodoDetails(todo)} />
-                            ))
-                        ) : (
-                            <p>No To-Dos found.</p>
                         )}
                     </ul>
-
-                    <CreateTodoModal
-                        isOpen={isCreateModalOpen}
-                        closeModal={closeModal}
-                        title={title}
-                        setTitle={setTitle}
-                        description={description}
-                        setDescription={setDescription}
-                        deadline={deadline}
-                        setDeadline={setDeadline}
-                        handleCreateTodo={handleCreateTodo}
-                    />
-
-                    <TodoDetailsModal
-                        isOpen={isToDoModalOpen}
-                        closeModal={closeToDoModal}
-                        selectedTodo={selectedTodo}
-                        isEditing={isEditing}
-                        setIsEditing={setIsEditing}
-                        handleUpdateTodo={handleUpdateTodo}
-                        handleDeleteTodo={handleDeleteTodo}
-                        handleChangeStatus={handleChangeStatus}
-                        setSelectedTodo={setSelectedTodo} // Ajoutez cette ligne
-                    />
-                    <UserModal
-                        isOpen={isUserModalOpen}
-                        closeModal={() => setIsUserModalOpen(false)}
-                        userName={user?.userName}
-                    />
                 </div>
+                <div className={styles['main-content']}>
+
+                    <div>
+                        {isAdminUser && !showUsersTodosOnly ?
+
+                            showUsers ?
+                                <ul className={styles['todo-list']}>
+                                    {users.length > 0 ? (
+                                        users.map(user => (
+                                            <UserItem key={user.id} user={user} onClick={() => ShowUserDetails(user)} />
+                                        )
+                                        )
+                                    ) : (
+                                        <p>No Users found.</p>
+                                    )}
+                                </ul>
+                                :
+                                <ul className={styles['todo-list']}>
+                                    {allTodos.length > 0 ? (
+                                        allTodos.map(todo => (
+                                            <ToDoItem userId={user?.id.toString() || ''} key={todo.id} todo={todo} isAdminUser={isAdminUser} showMyToDos={showUsersTodosOnly} onClick={() => ShowTodoDetails(todo)} />
+                                        ))
+                                    ) : (
+                                        <p>No To-Dos found.</p>
+                                    )}
+                                </ul> :
+                            <ul className={styles['todo-list']}>
+                                {usersTodos.length > 0 ? (
+                                    usersTodos.map(todo => (
+                                        <ToDoItem userId={user?.id.toString() || ''} key={todo.id} todo={todo} isAdminUser={isAdminUser} showMyToDos={showUsersTodosOnly} onClick={() => ShowTodoDetails(todo)} />
+                                    ))
+                                ) : (
+                                    <p>No To-Dos found.</p>
+                                )}
+                            </ul>}
+
+                        <CreateTodoModal
+                            isOpen={isCreateModalOpen}
+                            closeModal={closeModal}
+                            title={title}
+                            setTitle={setTitle}
+                            description={description}
+                            setDescription={setDescription}
+                            deadline={deadline}
+                            setDeadline={setDeadline}
+                            handleCreateTodo={handleCreateTodo}
+                            handleOverlayClick={handleOverlayClick}
+                        />
+                        <CreateUserModal
+                            isOpen={isCreateUserModalOpen}
+                            closeModal={() => setIsCreateUserModalOpen(false)}
+                            userName={userName}
+                            setUserName={setUserName}
+                            email={email}
+                            setEmail={setEmail}
+                            password={password}
+                            setPassword={setPassword}
+                            confirmPassword={confirmPassword}
+                            setConfirmPassword={setConfirmPassword}
+                            error={error}
+                            setError={setError}
+                            role={role}
+                            setRole={setRole}
+                            handleOverlayClick={handleOverlayClick} />
+
+                        <TodoDetailsModal
+                            isOpen={isToDoModalOpen}
+                            closeModal={() => { setIsToDoModalOpen(false); }}
+                            selectedTodo={selectedTodo}
+                            isEditing={isEditing}
+                            setIsEditing={setIsEditing}
+                            handleUpdateTodo={handleUpdateTodo}
+                            handleDeleteTodo={handleDeleteTodo}
+                            handleChangeStatus={handleChangeStatus}
+                            setSelectedTodo={setSelectedTodo} // Ajoutez cette ligne
+                            handleOverlayClick={handleOverlayClick} />
+                        <UserModal
+                            isOpen={isUserModalOpen}
+                            closeModal={() => { setIsUserModalOpen(false); }}
+                            userName={user?.userName}
+                            handleOverlayClick={handleOverlayClick}
+                        />
+                        <UserDetailsModal
+                            isOpen={isUserDetailsModalOpen}
+                            closeModal={() => { setIsUserDetailsModalOpen(false); setIsUserEditing(false) }}
+                            selectedUser={selectedUser} isEditing={isUserEditing}
+                            setIsEditing={setIsUserEditing}
+                            handleUpdateUser={handleUpdateUser}
+                            handleDeleteUser={handleDeleteUser}
+                            setSelectedUser={setSelectedUser}
+                            handleOverlayClick={handleOverlayClick} />
+                    </div>
+
+
+
+
+                </div>
+
+
             </div>
         </div>
     );

@@ -3,45 +3,42 @@
     box-sizing: border-box;
 }
 
-/* body {
+body {
+    overflow-y: hidden;
     background-color: #F0F0F5;
 
-} */
+}
 
 .homepage {
     display: flex;
     flex-direction: column;
     height: 100%;
     width: 100%;
-    background-color: #F0F0F5;
-    /* Arrière-plan sombre */
 }
 
 /* En-tête */
 .header {
     position: fixed;
-    /* Fixe l'en-tête en haut */
     top: 0;
-    /* Positionne l'en-tête en haut */
     left: 0;
-    /* Aligne l'en-tête à gauche */
+    right: 0;
     width: 100%;
-    /* Prend toute la largeur */
+    height: 100px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 20px;
     border-radius: 10px;
-    background-color: #4B6584;
-    /* Couleur d'en-tête */
-    color: white;
+    color: #4B6584;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    /* Ombre */
+    padding: 20px ;
+}
+
+.header h1 {
+    font-size: 1.5rem;
 }
 
 .header button {
-    background-color: #2C3E50;
-    /* Couleur des boutons */
+    background-color: #4B6584;
     color: white;
     padding: 10px 30px;
     border: none;
@@ -52,79 +49,109 @@
 }
 
 .header button:hover {
-    background-color: #34495E;   
-    /* Couleur des boutons au survol */
+    background-color: #34495E;
     transform: scale(1.05);
-    /* Zoom sur hover */
 }
 
 /* Conteneur principal pour la barre latérale et le contenu */
-.main-container {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-    /* Gérer les débordements */
-    background-color: #F0F0F5;
-    margin-top: 70px;
-    /* Espacement entre l'en-tête et le conteneur principal */
-}
+
 
 /* Barre latérale */
 .sidebar {
     position: fixed;
-    /* Fixe la barre latérale */
-    top: 80x;
-    /* Positionne la barre latérale sous l'en-tête (100px pour la hauteur de l'en-tête) */
+    top: 100px;
     left: 0;
-    /* Aligne la barre latérale à gauche */
     width: 20%;
-    /* Largeur fixe */
     height: calc(100vh - 100px);
-    /* Hauteur de la fenêtre moins la hauteur de l'en-tête */
-    background-color: #4B6584;
-    /* Couleur de la barre latérale */
     color: white;
     padding: 20px;
     overflow-y: auto;
-    /* Activer le défilement si nécessaire */
     border-radius: 10px;
-    /* Coins arrondis */
-}
+    border-right: 1px solid #5C7A92;
+    margin-right: 0;
 
-.sidebar h3 {
-    font-size: 1.5rem;
-    margin-bottom: 20px;
 }
 
 .sidebar li {
     cursor: pointer;
     margin: 10px 0;
     padding: 10px;
-    background-color: #2C3E50;
-    /* Couleur des éléments de la barre latérale */
+    color: #4B6584;
     border-radius: 5px;
     transition: background-color 0.3s, transform 0.2s ease-in-out;
+    font-size: 18px;
 }
 
 .sidebar li:hover {
-    background-color: #34495E;
-    /* Couleur au survol des éléments */
-    transform: scale(1.05);
-    /* Zoom léger */
+    background-color: #98b2ce;
+    transform: scale(1.1);
+    color: white;
 }
 
-/* Contenu principal */
-.main-content {
-    flex: 1;
+/* Contenu principal 
+    position: fixed;
+    top: 100px;
+    left: 20%;
+    width: 20%;
+    height: calc(100vh - 100px);
+    color: white;
     padding: 20px;
     overflow-y: auto;
-    /* Permet le défilement si nécessaire */
-    background-color: #F0F0F5;
-    /* Couleur d'arrière-plan clair */
-    height: 100%;
     border-radius: 10px;
-    margin-left: 20%;
-    /* Espacement à gauche pour le contenu principal */
+    border-right: 1px solid #5C7A92;
+    margin-right: 0;
+    background-color: green;
+*/
+.main-content-header {
+    display: flex;
+    justify-content: space-between;
+    width: 80%;
+    position: fixed;
+    left: 20%;
+    top: 100px;
+    padding: 20px;
+    margin-left: 0;
+    height: 80px;
+    border-radius: 5px;
+    /* border-bottom: 1px solid #dcdcdc; */
+}
+.main-content {
+    position: fixed;
+    top: 180px;
+    left: 20%;
+    width: 80%;
+    overflow: hidden;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+
+}
+
+/* En-tête fixe pour la section principale */
+
+
+/* Liste des To-Dos avec défilement vertical */
+.todo-list {
+    max-height: calc(100vh - 187px);
+    /* Hauteur de l'écran moins la hauteur de l'en-tête et de main-content-header */
+    width: 100%;
+    overflow-y: auto;
+    padding-right: 10px;
+    display: flex;
+    flex-direction: column;
+    /* Pour éviter le chevauchement avec la barre de défilement */
+
+}
+
+/* Bouton de création */
+.main-content-createButton {
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+
+
+.main-content-createButton:hover {
+    transform: scale(1.05);
 }
 
 /* Indicateur de chargement et messages */
@@ -134,7 +161,6 @@
 
 .error {
     color: #e74c3c;
-    /* Couleur des messages d'erreur */
     background-color: #fbeaea;
     padding: 10px;
     border-radius: 8px;
@@ -143,221 +169,12 @@
 
 .success {
     color: #27ae60;
-    /* Couleur des messages de succès */
     background-color: #e9f7ef;
     padding: 10px;
     border-radius: 8px;
     margin: 10px 0;
 }
 
-/* Style du modal */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.usermodelmodal {
-    position: fixed;
-    top: 86px;
-    right: 0px;
-    background-color: #4B6584;
-    color: white;
-    border-radius: 5px;
-    padding: 5px;
-    width: 10%;
-}
-
-.usermodelmodal div {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: 1.5rem;
-
-}
-
-.usermodelmodal button {
-    background-color: #2C3E50;
-    width: 100%;
-    border-radius: 5px;
-}
-
-.usermodelmodal button:hover {
-    background-color: #34495E;
-
-}
-
-.close {
-    font-size: 24px;
-    cursor: pointer;
-    /* Pointeur sur hover */
-}
-
-.close:hover {
-    font-size: 30px;
-    color: red
-        /* Pointeur sur hover */
-}
-
-.modal-content {
-    padding: 20px;
-    border-radius: 12px;
-    background-color: #F0F0F5;
-    width: 400px;
-    /* Largeur fixe pour le modal */
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    /* Ombre du modal */
-}
-
-.modal-content input {
-    background-color: #F0F0F5;
-    margin-top: 15px;
-    /* Espacement entre les champs */
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #bdc3c7;
-    /* Bordure gris clair */
-    transition: border-color 0.3s ease;
-    width: 100%;
-    /* Prend toute la largeur */
-}
-
-.modal-content input:focus {
-    border-color: #34495E;
-    /* Couleur de bordure au focus */
-    outline: none;
-    /* Supprime l'outline par défaut */
-}
-
-.modal-content button {
-    margin-top: 15px;
-    padding: 12px;
-    border-radius: 6px;
-    background-color: #34495E;
-    color: white;
-    border: none;
-    transition: background-color 0.3s;
-    /* margin:15px 40%; */
-}
-
-.modal-content button:hover {
-    background-color: #34495E;
-    transform: scale(1.05);
-
-    /* Couleur du bouton au hover */
-}
-
-/* Style pour la liste des To-Dos */
-.todo-list {
-    list-style-type: none;
-    /* Supprime les puces de la liste */
-    padding: 0;
-    /* Enlève le padding par défaut */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.todo-list li {
-
-    margin: 5px 0;
-    /* Espacement entre les To-Dos */
-
-    /* Coins arrondis */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    /* Ombre légère */
-    width: 80%;
-    /* Largeur complète */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.todo-list button {
-    width: 100%;
-    border: 1px solid #226ea1;
-    /* Bordure gris clair */
-    border-radius: 10px;
-    /* Prend toute la largeur de l'élément */
-    background-color: #4B6584;
-
-    /* Couleur de fond blanche */
-}
-
-.todo-list button:hover {
-    background-color: #5C7A92;
-    /* Couleur au survol */
-    /* Couleur du texte au survol */
-}
-.todo-item h1 {
-    font-size: 30px;
-}
-.todoitem-content {
-    height: 60px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 20px;
-}
-
-.todoitem-content h1 {
-    margin-right: 10px;
-}
-
-.button-container {
-    margin: 15px 0;
-    /* Espacement des boutons */
-    display: flex;
-    justify-content: space-between;
-    /* Espacement uniforme entre les boutons */
-}
-
-/* Styles des boutons dans le modal */
-.button-container button {
-    width: 25%;
-    /* Largeur des boutons */
-    margin-right: 10px;
-    /* Espacement à droite */
-}
-
-.button-container .save:hover {
-    background-color: #27ae60;
-    /* Couleur au survol pour le bouton Save */
-}
-
-.button-container .cancel:hover {
-    background-color: #ffa07a;
-    /* Couleur au survol pour le bouton Cancel */
-}
-
-.button-container .edit:hover {
-    background-color: #5B7F93;
-    /* Couleur au survol pour le bouton Edit */
-}
-
-.button-container .delete:hover {
-    background-color: #D94E4B;
-    /* Couleur au survol pour le bouton Delete */
-}
-
-.button-container .done:hover {
-    background-color: #27ae60;
-    /* Couleur au survol pour le bouton Done */
-}
-
-.todo-list h3 {
-    margin: 0;
-    /* Enlève la marge par défaut */
-    font-size: 1.2rem;
-    /* Taille de police pour le titre */
+.switch {
+    margin-left: 70px;
 }

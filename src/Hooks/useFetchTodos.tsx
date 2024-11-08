@@ -1,62 +1,95 @@
 import { useState, useEffect } from 'react';
 import { ToDo } from '../Models/ToDo';
 import { Status } from '../Models/Status';
+import { Role } from '../Models/Roles';
+import { User } from '../Components/User';
 
 type FetchTodosByStatusOptions = {
     userId: string;
     toFetchStatus?: Status;
+    userStatus?: Role;
     triggerUpdate?: boolean; // Status optionnel pour filtrer par statut
 };
 
-export const useFetchTodosByStatus = ({ userId, toFetchStatus,triggerUpdate }: FetchTodosByStatusOptions) => {
-    const [todos, setTodos] = useState<ToDo[]>([]);
+export const useFetchTodosByStatus = ({ userId, toFetchStatus, triggerUpdate, userStatus }: FetchTodosByStatusOptions) => {
+    const [usersTodos, setUsersTodos] = useState<ToDo[]>([]);
+    const [allTodos, setAllTodos] = useState<ToDo[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
     const [Fetchingrror, setFetchingrror] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false); // Adding a loading indicator
 
     useEffect(() => {
         const fetchTodos = async () => {
             setIsLoading(true);
-            console.log("Fetching todos for user:", userId, "with status:", toFetchStatus);
-            try {
-                const endpoint = 'http://localhost:5144/api/todo/todos';
+            console.log("Fetching Users for user:", userId, "with status:", toFetchStatus, "user is:", userStatus);
+            if (toFetchStatus == Status.Users) {
+                try {
+                    const response = await fetch(`http://localhost:5144/api/login/users`, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' },
+                    });
 
-                const requestBody = {
-                    UserId: String(userId),
-                    Status: toFetchStatus !== undefined ? toFetchStatus : null,
-                };
+                    const data = await response.json();
 
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestBody),
-                });
-
-                const data = await response.json(); // Lire le corps de la réponse une seule fois
-
-                if (!response.ok) {
-                    setFetchingrror(data.message || 'Failed to fetch To-Dos');
-                    setTodos([]); // Réinitialiser la liste des To-Dos en cas d'erreur
-                } else if (data.todos) {
-                    setTodos(data.todos);
-                    setFetchingrror(null);
-
-                } else {
-                    setFetchingrror(`No ${requestBody.Status} To-Dos found.`);
-                    setTodos([]); // Réinitialiser la liste des To-Dos si aucun n'est trouvé
+                    if (!response.ok) {
+                        setFetchingrror(data.message || 'Failed to fetch To-Dos');
+                    } else if (data.users || data.googleUsers) {
+                        setUsers([...data.users, ...data.googleUsers]);
+                    }
+                } catch (error) {
+                    setFetchingrror('Error fetching user information!'); // Gère les erreurs lors de la requête.
+                } finally {
+                    setIsLoading(false); // Arrête l'indicateur de chargement.
                 }
-            } catch (err) {
-                setFetchingrror((err as Error).message);
-                setTodos([]); // Réinitialiser la liste des To-Dos en cas d'erreur
-            } finally {
-                setIsLoading(false); // Fin du chargement
             }
+            else {
+                try {
+                    var endpoint = 'http://localhost:5144/api/todo/todos';
+
+                    const requestBody = {
+                        UserId: String(userId),
+                        Status: toFetchStatus !== undefined ? toFetchStatus : null,
+                        UserStatus: userStatus
+                    };
+
+
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(requestBody),
+                    });
+
+                    const data = await response.json(); // Lire le corps de la réponse une seule fois
+
+                    if (!response.ok) {
+                        setFetchingrror(data.message || 'Failed to fetch To-Dos');
+                    } else if (data.todos || data.usersTodos) {
+                        console.log('all todos',allTodos);
+                        console.log('users todos',usersTodos)
+
+                        setAllTodos(data.todos)
+                        setUsersTodos(data.usersTodos);
+                        setFetchingrror(null);
+
+                    }
+
+                    else {
+                        setFetchingrror(`No ${requestBody.Status} To-Dos found.`);
+                    }
+                } catch (err) {
+                    setFetchingrror((err as Error).message);
+                } finally {
+                    setIsLoading(false); // Fin du chargement
+                }
+            }
+
 
         };
 
         if (userId) {
             fetchTodos();
         }
-    }, [userId, toFetchStatus,triggerUpdate]); // Assurez-vous que toFetchStatus est dans le tableau des dépendances
+    }, [toFetchStatus]); // Assurez-vous que toFetchStatus est dans le tableau des dépendances
 
-    return { todos, Fetchingrror };
+    return { usersTodos, Fetchingrror, users, allTodos };
 };  

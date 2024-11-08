@@ -24,7 +24,6 @@ if (!rootElement.innerHTML) {
   root.render(
     <AuthProvider>
         <RouterProvider router={router} />
-
     </AuthProvider>
 
 )

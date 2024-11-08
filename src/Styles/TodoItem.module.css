@@ -1,0 +1,65 @@
+.todo-item {
+    width: 98%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    /* Bordure gris clair */
+    border-radius: 10px;
+    /* Coins arrondis */
+    background-color: #F0F5F5;
+    color: #5C7A92;
+    /* Couleur de fond blanche */
+    /* Couleur du texte */
+    padding: 20px;
+
+    text-align: left;
+    /* Aligne le texte à gauche */
+    cursor: pointer;
+    /* Pointeur pour indiquer qu'il s'agit d'un bouton */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin: 3px 1.3%; /* Centrage horizontal avec marge automatique */
+}
+
+.todo-item:hover {
+    background-color: #E1E8F0;
+    /* Couleur au survol */
+    transform: scale(1.02);
+    /* Zoom au survol */
+}
+
+.todoitem-content {
+    height: 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 25px;
+}
+
+.todoitem-expired {
+    height: 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 25px;
+
+}
+
+
+
+.dealinetored {
+    color: red;
+    animation: blink-text 1s infinite;
+    /* Lancer l'animation de clignotement */
+}
+
+@keyframes blink-text {
+
+    0%,
+    100% {
+        opacity: 1;
+        /* Texte visible */
+    }
+
+    50% {
+        opacity: 0;
+        /* Texte invisible */
+    }
+}
