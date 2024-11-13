@@ -5,6 +5,8 @@ import { Role } from "../Models/Roles";
 
 interface CreateUserModalProps {
     isOpen: boolean;
+    triggerUpdate: boolean;
+    setTriggerUpdate: (triggerUpdate: boolean) => void;
     closeModal: () => void;
     userName: string;
     setUserName: (userName: string) => void;
@@ -16,6 +18,8 @@ interface CreateUserModalProps {
     setConfirmPassword: (confirmPassword: string) => void;
     role: Role;
     setRole: (role: Role) => void;
+    succes: string | null;
+    setSucces: (succes: string) => void;
     error: string | null;
     setError: (error: string) => void;
     handleOverlayClick: (e: React.MouseEvent<HTMLDivElement>) => void;
@@ -23,24 +27,30 @@ interface CreateUserModalProps {
 }
 
 const CreateUserModal: React.FC<CreateUserModalProps> = ({
-    isOpen, closeModal,
+    isOpen, closeModal, triggerUpdate, setTriggerUpdate,
     userName, setUserName, email,
     setEmail, password, setPassword,
     confirmPassword, setConfirmPassword,
-    role, setRole, error, setError, handleOverlayClick }) => {
+    role, setRole, succes, setSucces, error, setError, handleOverlayClick }) => {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     if (!isOpen) return null;
 
     const handleCreateUser = async (e: React.FormEvent): Promise<void> => {
+        e.preventDefault();
         setIsSubmitting(true);
         const result = await registerUser(userName, email, password, confirmPassword, role);
         if (result.error) {
             console.log(error)
             setError(result.error);
+            setIsSubmitting(false);
         } else if (result.user) {
-            console.log("user created!");
+            setSucces(`User "${userName}" created succesfully!`);
+            closeModal();
+            setTimeout(() => {
+                setSucces('');
+            }, 2000); setIsSubmitting(false)
         }
     };
 
@@ -61,9 +71,12 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
                         <option value={Role.User}>User</option>
                         <option value={Role.Admin}>Admin</option>
                     </select>
-                    {error && <p className={styles.error}>{error}</p>}
+                    <div style={{ display: "flex" }}>
+                        {error && <p style={{ color: 'red', margin: '20px auto' }}>{error}</p>}
 
-                    <button type="submit" disabled={isSubmitting}>{isSubmitting ? "Creating..." : "Create"}</button>
+                    </div>
+
+                    <button style={{ alignSelf: "flex-end" }} type="submit" disabled={isSubmitting}>{isSubmitting ? "Creating..." : "Create"}</button>
                 </form>
             </div>
         </div>

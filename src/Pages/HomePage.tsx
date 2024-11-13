@@ -10,7 +10,7 @@ import { faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import TodoDetailsModal from '../Components/TodoDetailsModal';
 import CreateTodoModal from '../Components/CreateTodoModal';
-import UserModal from '../Components/UserModal';
+// import UserModal from '../Components/UserModal';
 import ToDoItem from '../Components/ToDoItem';
 import { Role } from '../Models/Roles';
 import { User } from '../Components/User';
@@ -18,6 +18,7 @@ import UserItem from '../Components/UserItem';
 import UserDetailsModal from '../Components/UserDetails';
 import CreateUserModal from '../Components/CreateUserModal';
 import { registerUser } from '../Utils/RegisterUser';
+import e from 'express';
 
 
 const HomePage: React.FC = () => {
@@ -28,7 +29,6 @@ const HomePage: React.FC = () => {
     const [isToDoModalOpen, setIsToDoModalOpen] = useState(false);
     const [isUserModalOpen, setIsUserModalOpen] = useState(false);
     const [isUserDetailsModalOpen, setIsUserDetailsModalOpen] = useState(false);
-    const [disableCreateButton, setDisableCreateButton] = useState(false);
 
     const [selectedTodo, setSelectedTodo] = useState<ToDo | null>(null);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -92,13 +92,32 @@ const HomePage: React.FC = () => {
     };
     // Close the modal
     const closeModal = () => {
-        setDisableCreateButton(false);
-        setIsCreateModalOpen(false);
-        setTitle('');
-        setDescription('');
-        setDeadline('');
-        setError(null);
-        setSuccess(null);
+        setTriggerUpdate(true);
+        setIsEditing(false);
+        setIsUserEditing(false);
+        if (isCreateModalOpen == true) {
+            setTitle('');
+            setDescription('');
+            setDeadline('');
+            setError(null);
+            setIsCreateModalOpen(false);
+        }
+        else if (isCreateUserModalOpen == true) {
+            setUserName('');
+            setEmail('');
+            setPassword('');
+            setConfirmPassword('');
+            setError(null);
+            setIsCreateUserModalOpen(false);
+        }
+        else if (isUserDetailsModalOpen == true) {
+            setIsUserDetailsModalOpen(false);
+            setError(null);
+        }
+        else if (isToDoModalOpen == true) {
+            setIsToDoModalOpen(false);
+            setError(null);
+        }
     };
 
     // Handling the creation of a new To-Do
@@ -153,53 +172,49 @@ const HomePage: React.FC = () => {
             }
         }
         finally {
-            setDisableCreateButton(false);
 
         }
     };
 
     const ShowTodoDetails = (todo: ToDo) => {
-        setDisableCreateButton(true)
         setSelectedTodo(todo); // Set the selected To-Do
         setIsEditing(false);
         setIsToDoModalOpen(true); // Open the modal
         // setTodosUserId(todo.userId)
-        getUserbyTodosUserId(todo.userEmail);
     };
     const ShowUserDetails = (user: User) => {
-        setDisableCreateButton(true);
         setSelectedUser(user); // Set the selected To-Do
         setIsEditing(false);
         setIsUserDetailsModalOpen(true); // Open the modal
         // setTodosUserId(todo.userId)
     };
-    const getUserbyTodosUserId = async (todosUserId: string) => {
-        console.log("its been called");
+    // const getUserbyTodosUserId = async (todosUserId: string) => {
+    //     console.log("its been called");
 
-        setIsLoading(true); // Active l'indicateur de chargement.
-        try {
-            const response = await fetch('http://localhost:5144/api/login/users/user', {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: todosUserId.toString() })
-            });
-            const data = await response.json();
-            console.log(data);
-            if (response.ok) {
-                // L'utilisateur ou l'utilisateur Google a été trouvé
-                console.log('User found:', data);
-                setTodosUserId(data.userName)
-                console.log(data.userName) // Remplacez ceci par l'action que vous souhaitez effectuer avec les données utilisateur.
-            } else {
-                // Gère le cas où l'utilisateur n'est pas trouvé
-                setError(data.message || 'User not found.');
-            }
-        } catch (error) {
-            setError('Error fetching user information!'); // Gère les erreurs lors de la requête.
-        } finally {
-            setIsLoading(false); // Arrête l'indicateur de chargement.
-        }
-    };
+    //     setIsLoading(true); // Active l'indicateur de chargement.
+    //     try {
+    //         const response = await fetch('http://localhost:5144/api/login/users/user', {
+    //             method: 'GET',
+    //             headers: { 'Content-Type': 'application/json' },
+    //             body: JSON.stringify({ id: todosUserId.toString() })
+    //         });
+    //         const data = await response.json();
+    //         console.log(data);
+    //         if (response.ok) {
+    //             // L'utilisateur ou l'utilisateur Google a été trouvé
+    //             console.log('User found:', data);
+    //             setTodosUserId(data.userName)
+    //             console.log(data.userName) // Remplacez ceci par l'action que vous souhaitez effectuer avec les données utilisateur.
+    //         } else {
+    //             // Gère le cas où l'utilisateur n'est pas trouvé
+    //             setError(data.message || 'User not found.');
+    //         }
+    //     } catch (error) {
+    //         setError('Error fetching user information!'); // Gère les erreurs lors de la requête.
+    //     } finally {
+    //         setIsLoading(false); // Arrête l'indicateur de chargement.
+    //     }
+    // };
 
     // const getUsers = async () => {
     //     setShowUsers(true);
@@ -230,18 +245,24 @@ const HomePage: React.FC = () => {
     // }
 
     const handleUpdateUser = async (user: User) => {
+        setTriggerUpdate(false);
         try {
             const response = await fetch('http://localhost:5144/api/login/update', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(user),
             });
-
+            const data = await response.json();
             if (response.ok) {
-                setSuccess(`To-Do "${user.userName}" updated successfully!`);
+                console.log(data.message);
+                setSuccess(`User "${user.userName}" updated successfully!`);
+                closeModal();
+                setTimeout(() => {
+                    setSuccess('');
+                }, 2000);
             } else {
-                const errorData = await response.json();
-                setError(errorData.message || 'Failed to update To-Do');
+                setError(data.message);
+                console.log(error);
             }
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -253,6 +274,7 @@ const HomePage: React.FC = () => {
     }
 
     const handleDeleteUser = async (user: User) => {
+        setTriggerUpdate(false);
         const confirmChange = window.confirm('Are you sure you want to DELETE this user?');
         if (!confirmChange) return;
 
@@ -271,10 +293,10 @@ const HomePage: React.FC = () => {
 
             if (response.ok) {
                 const data = await response.json();
-                setIsUserDetailsModalOpen(false);
+                setSuccess(`User "${user.userName}" deleted successfully!`);
+                closeModal();
                 setTimeout(() => {
-                    setSuccess(`User "${user.userName}" deleted successfully!`);
-
+                    setSuccess('');
                 }, 2000);
             } else {
                 const errorData = await response.json();
@@ -359,30 +381,30 @@ const HomePage: React.FC = () => {
     };
     const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
 
-        setDisableCreateButton(true);
         if (e.target === e.currentTarget) {
             if (isCreateModalOpen == true) {
-                setIsCreateModalOpen(false);
-                setDisableCreateButton(false);
-
+                closeModal();
             }
             else if (isCreateUserModalOpen == true) {
-                setIsCreateUserModalOpen(false);
-                setDisableCreateButton(false);
+                closeModal();
+
+                // setIsCreateUserModalOpen(false);
 
             }
             else if (isToDoModalOpen == true) {
-                setIsToDoModalOpen(false);
-                setDisableCreateButton(false);
+                closeModal();
 
+                // setIsToDoModalOpen(false);
             }
             else if (isUserModalOpen == true) {
-                setIsUserModalOpen(false)
-                setDisableCreateButton(false);
+                closeModal();
+
+                // setIsUserModalOpen(false)
             }
             else {
-                setIsUserDetailsModalOpen(false);
-                setDisableCreateButton(false);
+                closeModal();
+
+                // setIsUserDetailsModalOpen(false);
 
             }
         }
@@ -426,8 +448,8 @@ const HomePage: React.FC = () => {
                     {isLoading && <p>Loading...</p>}
                     {Fetchingrror && <p style={{ color: 'red' }}>{Fetchingrror}</p>}
                     {success && <div className={styles.success}>{success}</div>}
-                    {!showUsers ? <button className={styles['main-content-createButton']} onClick={() => { setIsCreateModalOpen(true); }}>Create To-Do</button>
-                        : <button type='button' className={styles['main-content-createButton']} onClick={() => { setIsCreateUserModalOpen(true); }}>Create User</button>}
+                    {!showUsers ? <button className={styles['main-content-createButton']} onClick={() => { setIsCreateModalOpen(true); setTriggerUpdate(false) }}>Create To-Do</button>
+                        : <button type='button' className={styles['main-content-createButton']} onClick={() => { setIsCreateUserModalOpen(true); setTriggerUpdate(false) }}>Create User</button>}
 
 
                 </div>
@@ -493,7 +515,7 @@ const HomePage: React.FC = () => {
                                             <ToDoItem userId={user?.id.toString() || ''} key={todo.id} todo={todo} isAdminUser={isAdminUser} showMyToDos={showUsersTodosOnly} onClick={() => ShowTodoDetails(todo)} />
                                         ))
                                     ) : (
-                                        <p>No To-Dos found.</p>
+                                      ""
                                     )}
                                 </ul> :
                             <ul className={styles['todo-list']}>
@@ -502,7 +524,7 @@ const HomePage: React.FC = () => {
                                         <ToDoItem userId={user?.id.toString() || ''} key={todo.id} todo={todo} isAdminUser={isAdminUser} showMyToDos={showUsersTodosOnly} onClick={() => ShowTodoDetails(todo)} />
                                     ))
                                 ) : (
-                                    <p>No To-Dos found.</p>
+                                    ""
                                 )}
                             </ul>}
 
@@ -520,7 +542,7 @@ const HomePage: React.FC = () => {
                         />
                         <CreateUserModal
                             isOpen={isCreateUserModalOpen}
-                            closeModal={() => setIsCreateUserModalOpen(false)}
+                            closeModal={closeModal}
                             userName={userName}
                             setUserName={setUserName}
                             email={email}
@@ -533,7 +555,9 @@ const HomePage: React.FC = () => {
                             setError={setError}
                             role={role}
                             setRole={setRole}
-                            handleOverlayClick={handleOverlayClick} />
+                            handleOverlayClick={handleOverlayClick}
+                            triggerUpdate={triggerUpdate} setTriggerUpdate={setTriggerUpdate}
+                            succes={success} setSucces={setSuccess} />
 
                         <TodoDetailsModal
                             isOpen={isToDoModalOpen}
@@ -546,13 +570,15 @@ const HomePage: React.FC = () => {
                             handleChangeStatus={handleChangeStatus}
                             setSelectedTodo={setSelectedTodo} // Ajoutez cette ligne
                             handleOverlayClick={handleOverlayClick} />
-                        <UserModal
+                        {/* <UserModal
                             isOpen={isUserModalOpen}
                             closeModal={() => { setIsUserModalOpen(false); }}
                             userName={user?.userName}
                             handleOverlayClick={handleOverlayClick}
-                        />
+                        /> */}
                         <UserDetailsModal
+                            error={error}
+                            setError={setError}
                             isOpen={isUserDetailsModalOpen}
                             closeModal={() => { setIsUserDetailsModalOpen(false); setIsUserEditing(false) }}
                             selectedUser={selectedUser} isEditing={isUserEditing}

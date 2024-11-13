@@ -20,6 +20,7 @@ export const useFetchTodosByStatus = ({ userId, toFetchStatus, triggerUpdate, us
 
     useEffect(() => {
         const fetchTodos = async () => {
+            setFetchingrror('');
             setIsLoading(true);
             console.log("Fetching Users for user:", userId, "with status:", toFetchStatus, "user is:", userStatus);
             if (toFetchStatus == Status.Users) {
@@ -62,10 +63,12 @@ export const useFetchTodosByStatus = ({ userId, toFetchStatus, triggerUpdate, us
                     const data = await response.json(); // Lire le corps de la réponse une seule fois
 
                     if (!response.ok) {
+
+                        setAllTodos([]);
+                        setUsersTodos([]);
                         setFetchingrror(data.message || 'Failed to fetch To-Dos');
                     } else if (data.todos || data.usersTodos) {
-                        console.log('all todos',allTodos);
-                        console.log('users todos',usersTodos)
+
 
                         setAllTodos(data.todos)
                         setUsersTodos(data.usersTodos);
@@ -74,11 +77,15 @@ export const useFetchTodosByStatus = ({ userId, toFetchStatus, triggerUpdate, us
                     }
 
                     else {
+
+
                         setFetchingrror(`No ${requestBody.Status} To-Dos found.`);
+
                     }
                 } catch (err) {
                     setFetchingrror((err as Error).message);
                 } finally {
+
                     setIsLoading(false); // Fin du chargement
                 }
             }
@@ -89,7 +96,7 @@ export const useFetchTodosByStatus = ({ userId, toFetchStatus, triggerUpdate, us
         if (userId) {
             fetchTodos();
         }
-    }, [toFetchStatus]); // Assurez-vous que toFetchStatus est dans le tableau des dépendances
+    }, [toFetchStatus, triggerUpdate]); // Assurez-vous que toFetchStatus est dans le tableau des dépendances
 
     return { usersTodos, Fetchingrror, users, allTodos };
 };  
