@@ -19,6 +19,7 @@ import UserDetailsModal from '../Components/UserDetails';
 import CreateUserModal from '../Components/CreateUserModal';
 import { registerUser } from '../Utils/RegisterUser';
 import e from 'express';
+import { UserUpdateViewModel } from '../Models/UpdateUserViewModel';
 
 
 const HomePage: React.FC = () => {
@@ -56,6 +57,7 @@ const HomePage: React.FC = () => {
     const [isAdminUser, setIsAdminUser] = useState(false);
     const [showUsersTodosOnly, setShowUsersTodosOnly] = useState(false);
     const [showUsersOnly, setShowUsersOnly] = useState(false);
+    const [isMainUser, setIsMainUser] = useState<boolean>(false);
 
     const [userId] = useState(String(user?.id));
     const [userStatus] = useState(user?.role);
@@ -272,7 +274,37 @@ const HomePage: React.FC = () => {
             }
         }
     }
+    const handleUpdateMainUser = async (user: UserUpdateViewModel) => {
 
+        setTriggerUpdate(false);
+        try {
+            const response = await fetch('http://localhost:5144/api/login/mainuser/update', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(user),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                console.log("this is user",data.user); 
+                setUser(data.user)
+                console.log(data.message);
+                setSuccess(`User "${user.userName}" updated successfully!`);
+                closeModal();
+                setTimeout(() => {
+                    setSuccess('');
+                }, 2000);
+            } else {
+                setError(data.message);
+                console.log(error);
+            }
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                setError(`Error: ${error.message}`);
+            } else {
+                setError('Unknown error occurred.');
+            }
+        }
+    }
     const handleDeleteUser = async (user: User) => {
         setTriggerUpdate(false);
         const confirmChange = window.confirm('Are you sure you want to DELETE this user?');
@@ -440,7 +472,7 @@ const HomePage: React.FC = () => {
         <div className={styles.homepage}>
             <div className={styles.header}>
                 <h1>Daily Check</h1>
-                <button onClick={() => { setIsUserModalOpen(true) }}><FontAwesomeIcon icon={faUser}></FontAwesomeIcon></button>
+                <button onClick={() => { setIsMainUser(true); user ? ShowUserDetails(user) : '' }}><FontAwesomeIcon icon={faUser}></FontAwesomeIcon></button>
                 <div className={styles['main-content-header']}>
                     {!showUsers ?
                         <h1>{showUsersTodosOnly ? <span> My </span> : <span> All </span>}  {toFetchStatus != undefined && toFetchStatus != Status.Users ? Status[toFetchStatus] : ""} To-Dos</h1>
@@ -501,7 +533,7 @@ const HomePage: React.FC = () => {
                                 <ul className={styles['todo-list']}>
                                     {users.length > 0 ? (
                                         users.map(user => (
-                                            <UserItem key={user.id} user={user} onClick={() => ShowUserDetails(user)} />
+                                            <UserItem key={user.id} user={user} onClick={() => { setIsMainUser(false); ShowUserDetails(user) }} />
                                         )
                                         )
                                     ) : (
@@ -515,7 +547,7 @@ const HomePage: React.FC = () => {
                                             <ToDoItem userId={user?.id.toString() || ''} key={todo.id} todo={todo} isAdminUser={isAdminUser} showMyToDos={showUsersTodosOnly} onClick={() => ShowTodoDetails(todo)} />
                                         ))
                                     ) : (
-                                      ""
+                                        ""
                                     )}
                                 </ul> :
                             <ul className={styles['todo-list']}>
@@ -577,16 +609,19 @@ const HomePage: React.FC = () => {
                             handleOverlayClick={handleOverlayClick}
                         /> */}
                         <UserDetailsModal
+                            isMainUser={isMainUser}
+                            setIsMainUser={setIsMainUser}
                             error={error}
                             setError={setError}
                             isOpen={isUserDetailsModalOpen}
-                            closeModal={() => { setIsUserDetailsModalOpen(false); setIsUserEditing(false) }}
+                            closeModal={() => { setIsUserDetailsModalOpen(false); setIsUserEditing(false); }}
                             selectedUser={selectedUser} isEditing={isUserEditing}
                             setIsEditing={setIsUserEditing}
                             handleUpdateUser={handleUpdateUser}
                             handleDeleteUser={handleDeleteUser}
                             setSelectedUser={setSelectedUser}
-                            handleOverlayClick={handleOverlayClick} />
+                            handleOverlayClick={handleOverlayClick}
+                            handleUpdateMainUser={handleUpdateMainUser} />
                     </div>
 
 

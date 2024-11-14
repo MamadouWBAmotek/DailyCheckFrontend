@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ToDo } from '../Models/ToDo';
 import styles from '../Styles/ToDoDetailsModal.module.css';
 import { Status } from '../Models/Status';
@@ -8,73 +8,32 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faCheck, faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { UserUpdateViewModel } from '../Models/UpdateUserViewModel';
 
-interface UserDetailsModalProps {
+interface MainUserDetailsModalProps {
     isOpen: boolean;
     error: string | null;
     setError: (error: string) => void;
     closeModal: () => void;
-    selectedUser: User | null;
+    selectedUser: User | undefined;
     isEditing: boolean;
     setIsEditing: (isEditing: boolean) => void;
-    isMainUser: boolean;
-    setIsMainUser: (isMainUser: boolean) => void;
     handleUpdateUser: (user: User) => Promise<void>;
-    handleUpdateMainUser: (user: UserUpdateViewModel) => Promise<void>;
     handleDeleteUser: (user: User) => Promise<void>;
     setSelectedUser: (user: User) => void;
     handleOverlayClick: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
-const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
+const MainUserDetailsModal: React.FC<MainUserDetailsModalProps> = ({
     isOpen,
     closeModal,
     selectedUser,
     isEditing,
-    isMainUser, setIsMainUser,
     error, setError,
     setIsEditing,
     handleUpdateUser,
-    handleUpdateMainUser,
     handleDeleteUser,
     setSelectedUser,
     handleOverlayClick
 }) => {
-    const [oldPassword, setOldPassword] = useState<string>('');
-    const [newPassword, setNewPassword] = useState<string>('');
-    const [confirmPassword, setConfirmPassword] = useState<string>('');
-    const [isSaveClickable, setIsSaveClickable] = useState<boolean>(false);
-
-    const mainuser: UserUpdateViewModel = {
-        id: selectedUser?.id || -1,
-        userName: selectedUser?.userName || '',
-        email: selectedUser?.email || '',
-        role: selectedUser?.role || Role.User,
-        password: oldPassword || '',
-        newPassword: confirmPassword || ''
-    }
-    const handleMainUserSaveOnclick = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (newPassword !== confirmPassword) {
-            setError("Passwords do not match!")
-        }
-        else if (oldPassword.length <= 0) {
-            mainuser.password = '';
-            mainuser.newPassword = '';
-            setError('');
-            handleUpdateMainUser(mainuser);
-        }
-        else if (newPassword?.length <= 10) {
-            setError('Password must have 10 characters minimum')
-        }
-        else {
-            handleUpdateMainUser(mainuser);
-            setOldPassword('');
-            setNewPassword('');
-            setConfirmPassword('');
-            setError('');
-        }
-    }
-
     if (!isOpen || !selectedUser) return null;
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
@@ -115,33 +74,7 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                         disabled={!isEditing}
                         pattern={isEditing ? "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$" : undefined}
                         required={isEditing} />
-
-                    {(isMainUser && isEditing) ? <div><input
-                        type="password"
-                        value={oldPassword}
-                        onChange={(e) => setOldPassword(e.target.value)}
-                        disabled={!isEditing}
-                        placeholder='Old password'
-                        pattern={isEditing ? "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$" : undefined}
-                        required={isEditing} />
-                        <input
-                            type="password"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            placeholder='New password'
-                            disabled={!isEditing}
-                            pattern={isEditing ? "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$" : undefined}
-                            required />
-                        <input
-                            type="password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            placeholder='Confirm new Password'
-                            disabled={!isEditing}
-                            pattern={isEditing ? "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$" : undefined}
-                            required />
-                    </div> : ""}
-                    {!isMainUser ? <select
+                    <select
                         name="status"
                         id="status"
                         onChange={(e) => setSelectedUser({ ...selectedUser, role: parseInt(e.target.value) as Role })}
@@ -152,7 +85,7 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                                 {option.label}
                             </option>
                         ))}
-                    </select> : ''}
+                    </select>
                     <div style={{ display: "flex" }}>
                         {error && <p style={{ color: 'red', margin: '20px auto' }}>{error}</p>}
                     </div>
@@ -162,7 +95,7 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                                 <button className={styles['cancel']} onClick={(e) => { e.preventDefault(); setIsEditing(false); }}>
                                     <FontAwesomeIcon icon={faArrowLeft} />
                                 </button>
-                                <button type='submit' disabled={isSaveClickable} className={styles['save']} onClick={(e) => { e.preventDefault(); isMainUser ? handleMainUserSaveOnclick(e) : handleUpdateUser(selectedUser) }}>
+                                <button type='submit' className={styles['save']} onClick={(e) => { e.preventDefault(); handleUpdateUser(selectedUser); }}>
                                     <FontAwesomeIcon icon={faCheck} />
                                 </button>
                             </>
@@ -183,4 +116,4 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
     );
 };
 
-export default UserDetailsModal;
+export default MainUserDetailsModal;
