@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { ToDo } from '../Models/ToDo';
-import styles from '../Styles/ToDoDetailsModal.module.css';
+import styles from '../Styles/MainUserDetailsModal.module.css';
 import { Status } from '../Models/Status';
 import { User } from './User';
 import { Role } from '../Models/Roles';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faCheck, faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faCheck, faEye, faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { UserUpdateViewModel } from '../Models/UpdateUserViewModel';
+import Logout from './Logout';
 
 interface UserDetailsModalProps {
     isOpen: boolean;
@@ -42,8 +43,20 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
     const [oldPassword, setOldPassword] = useState<string>('');
     const [newPassword, setNewPassword] = useState<string>('');
     const [confirmPassword, setConfirmPassword] = useState<string>('');
-    const [isSaveClickable, setIsSaveClickable] = useState<boolean>(false);
 
+    const [showOldPassword, setShowOldPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    const toggleOldPasswordVisibility = () => {
+        setShowOldPassword(!showOldPassword);
+    };
+    const toggleNewPasswordVisibility = () => {
+        setShowNewPassword(!showNewPassword);
+    };
+    const toggleConfirmPasswordVisibility = () => {
+        setShowConfirmPassword(!showConfirmPassword);
+    };
     const mainuser: UserUpdateViewModel = {
         id: selectedUser?.id || -1,
         userName: selectedUser?.userName || '',
@@ -52,19 +65,40 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
         password: oldPassword || '',
         newPassword: confirmPassword || ''
     }
-    const handleMainUserSaveOnclick = (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleMainUserSaveOnclick = () => {
+
         if (newPassword !== confirmPassword) {
             setError("Passwords do not match!")
+            setOldPassword('');
+            setNewPassword('');
+            setConfirmPassword('');
+            setShowOldPassword(false)
+            setShowNewPassword(false)
+            setShowConfirmPassword(false)
+
+
         }
-        else if (oldPassword.length <= 0) {
+        else if (oldPassword.length <= 0 && (newPassword.length <= 0 && confirmPassword.length <= 0)) {
             mainuser.password = '';
             mainuser.newPassword = '';
-            setError('');
+
             handleUpdateMainUser(mainuser);
+            setError('')
+            setOldPassword('');
+            setNewPassword('');
+            setConfirmPassword('');
+            setShowOldPassword(false)
+            setShowNewPassword(false)
+            setShowConfirmPassword(false)
         }
-        else if (newPassword?.length <= 10) {
-            setError('Password must have 10 characters minimum')
+        else if (newPassword?.length < 10 || oldPassword?.length < 10 || confirmPassword?.length < 10) {
+            setError('Password must have 10 characters minimum');
+            setOldPassword('');
+            setNewPassword('');
+            setConfirmPassword('');
+            setShowOldPassword(false)
+            setShowNewPassword(false)
+            setShowConfirmPassword(false)
         }
         else {
             handleUpdateMainUser(mainuser);
@@ -72,6 +106,9 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
             setNewPassword('');
             setConfirmPassword('');
             setError('');
+            setShowOldPassword(false)
+            setShowNewPassword(false)
+            setShowConfirmPassword(false)
         }
     }
 
@@ -99,8 +136,19 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
     return (
         <div className={styles.modal} onClick={handleOverlayClick}>
             <div className={styles['modal-content']}>
-                <span className={styles.close} onClick={closeModal}>&times;</span>
-                <form onKeyDown={handleKeyDown} onSubmit={() => isEditing ? handleUpdateUser : setIsEditing(true)}>
+                <span className={styles.close} onClick={() => { closeModal(); setOldPassword(''); setNewPassword(''); setConfirmPassword(''); }}>&times;</span>
+                <form onKeyDown={handleKeyDown} onSubmit={(e) => {
+                    e.preventDefault();
+                    if (isEditing) {
+                        if (isMainUser) {
+                            handleMainUserSaveOnclick();
+                        } else {
+                            handleUpdateUser(selectedUser);
+                        }
+                    } else {
+                        setIsEditing(true);
+                    }
+                }}>
                     <h3>{isEditing ? 'Edit User' : 'User Details'}</h3>
                     <input
                         type="text"
@@ -109,37 +157,39 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                         disabled={!isEditing}
                     />
                     <input
-                        type="text"
+                        type="email"
                         value={selectedUser.email}
                         onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })}
                         disabled={!isEditing}
-                        pattern={isEditing ? "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$" : undefined}
+                        pattern={"[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$"}
                         required={isEditing} />
 
                     {(isMainUser && isEditing) ? <div><input
-                        type="password"
+                        type={showOldPassword ? 'text' : 'password'}
                         value={oldPassword}
                         onChange={(e) => setOldPassword(e.target.value)}
                         disabled={!isEditing}
                         placeholder='Old password'
-                        pattern={isEditing ? "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$" : undefined}
-                        required={isEditing} />
+                    />
+                        <span> <button onClick={(e) => { e.preventDefault(); toggleOldPasswordVisibility() }}><FontAwesomeIcon icon={faEye}></FontAwesomeIcon></button></span>
                         <input
-                            type="password"
+                            type={showNewPassword ? 'text' : 'password'}
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
                             placeholder='New password'
                             disabled={!isEditing}
-                            pattern={isEditing ? "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$" : undefined}
-                            required />
+                        />
+                        <span> <button onClick={(e) => { e.preventDefault(); toggleNewPasswordVisibility() }}><FontAwesomeIcon icon={faEye}></FontAwesomeIcon></button></span>
+
                         <input
-                            type="password"
+                            type={showConfirmPassword ? 'text' : 'password'}
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             placeholder='Confirm new Password'
                             disabled={!isEditing}
-                            pattern={isEditing ? "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$" : undefined}
-                            required />
+                        />
+                        <span> <button type='button' onClick={(e) => { e.preventDefault(); toggleConfirmPasswordVisibility() }}><FontAwesomeIcon icon={faEye}></FontAwesomeIcon></button></span>
+
                     </div> : ""}
                     {!isMainUser ? <select
                         name="status"
@@ -162,16 +212,18 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                                 <button className={styles['cancel']} onClick={(e) => { e.preventDefault(); setIsEditing(false); }}>
                                     <FontAwesomeIcon icon={faArrowLeft} />
                                 </button>
-                                <button type='submit' disabled={isSaveClickable} className={styles['save']} onClick={(e) => { e.preventDefault(); isMainUser ? handleMainUserSaveOnclick(e) : handleUpdateUser(selectedUser) }}>
+                                <button type='submit' className={styles['save']}>
                                     <FontAwesomeIcon icon={faCheck} />
                                 </button>
                             </>
                         ) : (
                             <>
-                                <button className={styles['delete']} onClick={(e) => { e.preventDefault(); handleDeleteUser(selectedUser); }}>
+                                {!isMainUser ? <button className={styles['delete']} onClick={(e) => { e.preventDefault(); handleDeleteUser(selectedUser); }}>
                                     <FontAwesomeIcon icon={faTrash} />
-                                </button>
-                                <button type='submit' className={styles['edit']} onClick={(e) => { e.preventDefault(); setIsEditing(true); }}>
+                                </button> : ""}
+                                {isMainUser ? <Logout></Logout> : ""
+                                }
+                                <button type='button' className={styles['edit']} onClick={(e) => { e.preventDefault(); setIsEditing(true); }}>
                                     <FontAwesomeIcon icon={faPenToSquare} />
                                 </button>
                             </>

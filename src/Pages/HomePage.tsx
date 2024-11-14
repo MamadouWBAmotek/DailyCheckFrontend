@@ -256,6 +256,9 @@ const HomePage: React.FC = () => {
             });
             const data = await response.json();
             if (response.ok) {
+                if (userId == user.id.toString()) {
+                    setUser(user);
+                }
                 console.log(data.message);
                 setSuccess(`User "${user.userName}" updated successfully!`);
                 closeModal();
@@ -285,7 +288,7 @@ const HomePage: React.FC = () => {
             });
             const data = await response.json();
             if (response.ok) {
-                console.log("this is user",data.user); 
+                console.log("this is user", data.user);
                 setUser(data.user)
                 console.log(data.message);
                 setSuccess(`User "${user.userName}" updated successfully!`);
