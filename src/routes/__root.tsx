@@ -30,7 +30,7 @@ function RootComponent() {
           >
           </Link>
           <Link
-            to="/registration"
+            to="/register"
             activeProps={{
               className: 'font-bold',
             }}

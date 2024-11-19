@@ -16,6 +16,8 @@ interface UserDetailsModalProps {
     closeModal: () => void;
     selectedUser: User | null;
     isEditing: boolean;
+    isPasswordEditing: boolean;
+    setIsPasswordEditing: (isPasswordEditing: boolean) => void;
     setIsEditing: (isEditing: boolean) => void;
     isMainUser: boolean;
     setIsMainUser: (isMainUser: boolean) => void;
@@ -31,6 +33,8 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
     closeModal,
     selectedUser,
     isEditing,
+    isPasswordEditing,
+    setIsPasswordEditing,
     isMainUser, setIsMainUser,
     error, setError,
     setIsEditing,
@@ -118,7 +122,13 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
         if (e.key === 'Enter') {
             e.preventDefault(); // Empêche le comportement par défaut du bouton "submit"
             if (isEditing) {
-                handleUpdateUser(selectedUser);
+                if (isMainUser) {
+                    handleMainUserSaveOnclick();
+                } else {
+                    handleUpdateUser(selectedUser);
+                }
+            } else {
+                setIsEditing(true);
             }
         }
     };
@@ -149,22 +159,27 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                         setIsEditing(true);
                     }
                 }}>
-                    <h3>{isEditing ? 'Edit User' : 'User Details'}</h3>
-                    <input
+                    <h3>
+                        {isEditing
+                            ? isPasswordEditing
+                                ? 'Edit Password'
+                                : 'Edit User'
+                            : 'User Details'}
+                    </h3>                    {!isPasswordEditing ? <input
                         type="text"
                         value={selectedUser.userName}
                         onChange={(e) => setSelectedUser({ ...selectedUser, userName: e.target.value })}
                         disabled={!isEditing}
-                    />
-                    <input
+                    /> : ""}
+                    {!isPasswordEditing ? <input
                         type="email"
                         value={selectedUser.email}
                         onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })}
                         disabled={!isEditing}
                         pattern={"[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$"}
-                        required={isEditing} />
+                        required={isEditing} /> : ""}
 
-                    {(isMainUser && isEditing) ? <div><input
+                    {(isMainUser && isEditing && isPasswordEditing) ? <div><input
                         type={showOldPassword ? 'text' : 'password'}
                         value={oldPassword}
                         onChange={(e) => setOldPassword(e.target.value)}
@@ -209,9 +224,11 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                     <div className={styles['button-container']}>
                         {isEditing ? (
                             <>
-                                <button className={styles['cancel']} onClick={(e) => { e.preventDefault(); setIsEditing(false); }}>
+                                <button className={styles['cancel']} onClick={(e) => { setIsPasswordEditing(false); e.preventDefault(); setIsEditing(false); closeModal(); setError('') }}>
                                     <FontAwesomeIcon icon={faArrowLeft} />
                                 </button>
+                                {!isPasswordEditing ? <button type='button' onClick={(e) => { e.preventDefault(); setIsPasswordEditing(true) }}>Edit my password</button> : ""}
+
                                 <button type='submit' className={styles['save']}>
                                     <FontAwesomeIcon icon={faCheck} />
                                 </button>

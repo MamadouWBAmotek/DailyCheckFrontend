@@ -12,10 +12,13 @@ interface MainUserDetailsModalProps {
     isOpen: boolean;
     error: string | null;
     setError: (error: string) => void;
+
     closeModal: () => void;
     selectedUser: User | undefined;
     isEditing: boolean;
     setIsEditing: (isEditing: boolean) => void;
+    isPasswordEditing: boolean;
+    setIsPasswordEditing: (isPasswordEditing: boolean) => void;
     handleUpdateUser: (user: User) => Promise<void>;
     handleDeleteUser: (user: User) => Promise<void>;
     setSelectedUser: (user: User) => void;
@@ -27,6 +30,8 @@ const MainUserDetailsModal: React.FC<MainUserDetailsModalProps> = ({
     closeModal,
     selectedUser,
     isEditing,
+    isPasswordEditing,
+    setIsPasswordEditing,
     error, setError,
     setIsEditing,
     handleUpdateUser,

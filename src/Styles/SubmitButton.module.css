@@ -6,8 +6,8 @@
 
 /* Styling for the submit button */
 .submitButton {
-    background-color: #007aff; /* Background color for the button */
-    color: white; /* Text color for the button */
+    background-color: #F5F5F7; /* Background color for the button */
+    color: #795757; /* Text color for the button */
     padding: 12px 20px; /* Increased padding */
     border: none; /* Remove default border */
     border-radius: 12px; /* Rounded corners for the button */
@@ -19,7 +19,7 @@
 
 /* Hover effect for the submit button */
 .submitButton:hover {
-    background-color: #005bb5; /* Darker color on hover */
+    background-color: #CFCFD1; /* Darker color on hover */
 }
 
 /* Disabled button styling */

@@ -7,86 +7,104 @@ body {
 .container {
     display: flex;
     flex-direction: column;
-    width: 50%;
-    margin:  auto;
-    background: #dcdce6; /* Background color for the container */
-    border-radius: 20px; /* Rounded corners */
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Soft shadow effect */
-    padding: 40px; /* Internal spacing */
-    min-width: 600px; /* Minimum width for the container */
-    transition: max-width 0.3s ease; /* Smooth transition for width changes */
+    width: 40%;
+    margin: 22px 0 0 30px;
+    background-color: #794b4b;
+    color: #D0D0D0;
+
+    /* Background color for the container */
+    border-radius: 20px;
+    /* Rounded corners */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    /* Soft shadow effect */
+    padding: 40px;
+    /* Internal spacing */
+    min-width: 600px;
+    height: 650px;
+
+    /* Minimum width for the container */
+    transition: max-width 0.3s ease;
+    /* Smooth transition for width changes */
 }
 
 /* Responsive styles for smaller screens */
 @media (max-width: 768px) {
     .container {
-        width: 90%; /* Make container more responsive on smaller screens */
-        padding: 20px; /* Adjust padding for smaller screens */
+        width: 90%;
+        /* Make container more responsive on smaller screens */
+        padding: 20px;
+        /* Adjust padding for smaller screens */
     }
 }
 
 /* Legend styling for the form title */
 .legend {
-    font-size: 28px; /* Increased font size */
-    font-weight: bold; /* Bold text */
-    text-align: center; /* Center text */
-    margin-bottom: 20px; /* Increased bottom margin */
+    font-size: 28px;
+    /* Increased font size */
+    font-weight: bold;
+    /* Bold text */
+    text-align: center;
+    /* Center text */
+    /* Increased bottom margin */
 }
 
-/* Label styling for input fields */
-.label {
-    font-size: 18px; /* Increased font size for labels */
-    margin-bottom: 10px; /* Increased bottom margin */
-}
 
+i {
+    color: #888;
+}
 
 /* Error message styling */
 .error {
-    color: red; /* Color for error messages */
-    margin-top: 10px; /* Margin for spacing */
+    text-align: center;
+    color: red;
+    /* Color for error messages */
+    margin-top: 10px;
+    /* Margin for spacing */
 }
 
 /* Button styling */
-button {
-    background-color: #4B6584; /* Background color for button */
-    color: white; /* Text color for button */
-    border: none; /* No border */
-    border-radius: 4px; /* Rounded corners */
-    padding: 10px 15px; /* Padding for button */
-    font-size: 16px; /* Font size for button */
-    cursor: pointer; /* Cursor style */
-    transition: background-color 0.3s; /* Transition for hover effect */
-}
 
-/* Button hover effect */
-button:hover {
-    background-color: #3A5167; /* Darker background on hover */
-}
+
+
 
 /* Google sign-in section styling */
 .googlesignindiv {
+
     display: flex;
     align-items: center;
-    flex-direction: column; /* Stack items vertically */
+    flex-direction: column;
+    /* Stack items vertically */
     text-align: center;
-    margin: 10px auto; /* Center the section */
+    margin: 10px auto;
+    /* Center the section */
 }
+
+.googlesignindiv {
+    text-align: center;
+    margin-top: 20px;
+}
+
+
 
 /* Login link section styling */
 .logindiv {
+
     padding-top: 15px;
-    text-align: center; /* Center text */
-    
+    text-align: center;
+    /* Center text */
+
 }
 
 /* Login link styling */
 .logindiv a {
-    color: #007aff; /* Link color */
-    text-decoration: none; /* Remove underline from link */
-    font-size: 16px; /* Font size for the link */
+    text-decoration: underline;
+    /* Link color */
+    /* Remove underline from link */
+    font-size: 16px;
+    /* Font size for the link */
 }
 
 /* Hover effect for the login link */
-.logindiv a:hover {
-    text-decoration: underline; /* Underline on hover */
-}
+/* .logindiv a:hover {
+    text-decoration: underline;
+} */

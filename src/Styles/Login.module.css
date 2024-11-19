@@ -1,15 +1,16 @@
 /* Set global body styles */
 body {
     font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: #795757;
+
 }
 
 /* Container for the login form */
 .container {
     display: flex;
     flex-direction: column;
-    width: 50%;
-    margin: 1% auto;
-    background: #dcdce6;
+    width: 40%;
+    margin: 22px 0 0 30px;
     /* Background color for the container */
     border-radius: 20px;
     /* Rounded corners */
@@ -17,7 +18,10 @@ body {
     /* Soft shadow effect */
     padding: 40px;
     /* Internal spacing */
+    background-color: #794b4b;
+    color: #D0D0D0;
     min-width: 600px;
+    height: 650px;
     /* Minimum width for the container */
     transition: max-width 0.3s ease;
     /* Smooth transition for width changes */
@@ -41,17 +45,15 @@ body {
     /* Bold text */
     text-align: center;
     /* Center text */
-    margin-bottom: 30px;
     /* Increased bottom margin */
 }
 
-/* Label styling for input fields */
-.label {
-    font-size: 18px;
-    /* Increased font size for labels */
-    margin-bottom: 10px;
-    /* Increased bottom margin */
+i {
+    color: #888;
 }
+
+/* Label styling for input fields */
+
 
 /* Google sign-in section styling */
 .googlesignindiv {
@@ -70,15 +72,13 @@ body {
 .signupdiv {
     text-align: center;
     /* Center text */
-    margin-top: 30px;
     /* Increased top margin */
 }
 
 /* Sign-up link styling */
 .signupdiv a {
-    color: #007aff;
     /* Link color */
-    text-decoration: none;
+    text-decoration: underline;
     /* Remove underline from link */
     font-size: 16px;
     /* Font size for the link */
@@ -91,20 +91,24 @@ body {
 }
 
 .error {
+    margin: 0;
+    padding: 0;
+    text-align: center;
     color: red;
 }
 
 /* Styling for the "Forgot Password?" link */
 .resetPasswordHelper {
-    display: block;
+    cursor: pointer;
+    align-self: flex-end;
     /* Block display for layout */
     text-align: right;
     /* Align text to the right */
-    color: #007aff;
+    color: #F5F5F7;
     /* Link color */
     margin-bottom: 30px;
     /* Increased bottom margin */
-    text-decoration: none;
+    text-decoration: underline;
     /* Remove underline from link */
 }
 

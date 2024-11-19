@@ -2,9 +2,11 @@
 import { useAuth } from '../Components/Auth'; // Importez le hook d'authentification
 import { jwtDecode } from 'jwt-decode';
 import Cookies from 'js-cookie';
+import { useState } from 'react';
 
 const useGoogleLogin = (navigate: any) => {
-    const { setIsauth, setUser,user } = useAuth(); // Utilisez le hook d'authentification
+    const { setIsauth, setUser, user } = useAuth(); // Utilisez le hook d'authentification
+    const [isLoading, setIsLoading] = useState<boolean>(false); // Adding a loading indicator
 
     const handleGoogleLogin = async (credentialResponse: any): Promise<void> => {
         if (credentialResponse.credential) {
@@ -19,6 +21,7 @@ const useGoogleLogin = (navigate: any) => {
             };
 
             try {
+                setIsLoading(true);
                 // POST request to authenticate using Google OAuth
                 const response = await fetch('http://localhost:5144/api/login/loginwithgoogle', {
                     method: 'POST',
@@ -59,6 +62,9 @@ const useGoogleLogin = (navigate: any) => {
             } catch (error) {
                 console.error('Error during Google login:', error);
                 throw new Error('Error checking email. Please try again later.');
+            }
+            finally {
+                setIsLoading(false);
             }
         } else {
             throw new Error('No credential provided. Please try again.');

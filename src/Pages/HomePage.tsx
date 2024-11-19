@@ -35,6 +35,7 @@ const HomePage: React.FC = () => {
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [isUserEditing, setIsUserEditing] = useState<boolean>(false);
+    const [isPasswordEditing, setIsPasswordEditing] = useState<boolean>(false);
 
     const [userName, setUserName] = useState<string>('');
     const [email, setEmail] = useState<string>('');
@@ -94,6 +95,8 @@ const HomePage: React.FC = () => {
     };
     // Close the modal
     const closeModal = () => {
+        setError('');
+        setIsPasswordEditing(false);
         setTriggerUpdate(true);
         setIsEditing(false);
         setIsUserEditing(false);
@@ -190,61 +193,7 @@ const HomePage: React.FC = () => {
         setIsUserDetailsModalOpen(true); // Open the modal
         // setTodosUserId(todo.userId)
     };
-    // const getUserbyTodosUserId = async (todosUserId: string) => {
-    //     console.log("its been called");
 
-    //     setIsLoading(true); // Active l'indicateur de chargement.
-    //     try {
-    //         const response = await fetch('http://localhost:5144/api/login/users/user', {
-    //             method: 'GET',
-    //             headers: { 'Content-Type': 'application/json' },
-    //             body: JSON.stringify({ id: todosUserId.toString() })
-    //         });
-    //         const data = await response.json();
-    //         console.log(data);
-    //         if (response.ok) {
-    //             // L'utilisateur ou l'utilisateur Google a été trouvé
-    //             console.log('User found:', data);
-    //             setTodosUserId(data.userName)
-    //             console.log(data.userName) // Remplacez ceci par l'action que vous souhaitez effectuer avec les données utilisateur.
-    //         } else {
-    //             // Gère le cas où l'utilisateur n'est pas trouvé
-    //             setError(data.message || 'User not found.');
-    //         }
-    //     } catch (error) {
-    //         setError('Error fetching user information!'); // Gère les erreurs lors de la requête.
-    //     } finally {
-    //         setIsLoading(false); // Arrête l'indicateur de chargement.
-    //     }
-    // };
-
-    // const getUsers = async () => {
-    //     setShowUsers(true);
-    //     try {
-    //         const response = await fetch(`http://localhost:5144/api/login/users`, {
-    //             method: 'GET',
-    //             headers: { 'Content-Type': 'application/json' },
-    //         });
-
-    //         const data = await response.json();
-
-    //         if (response.ok) {
-    //             // L'utilisateur ou l'utilisateur Google a été trouvé
-    //             console.log('User found:', data);
-    //             const allUsers = [data.users + data.googleUsers]
-    //             console.log(allUsers);
-    //             setUsers([...data.users, ...data.googleUsers]);
-    //             console.log("these are all the users", users) // Remplacez ceci par l'action que vous souhaitez effectuer avec les données utilisateur.
-    //         } else {
-    //             // Gère le cas où l'utilisateur n'est pas trouvé
-    //             setError(data.message || 'User not found.');
-    //         }
-    //     } catch (error) {
-    //         setError('Error fetching user information!'); // Gère les erreurs lors de la requête.
-    //     } finally {
-    //         setIsLoading(false); // Arrête l'indicateur de chargement.
-    //     }
-    // }
 
     const handleUpdateUser = async (user: User) => {
         setTriggerUpdate(false);
@@ -344,10 +293,6 @@ const HomePage: React.FC = () => {
             setIsLoading(false);
         }
     };
-
-
-
-
 
 
     const handleDeleteTodo = async (todo: ToDo) => {
@@ -624,7 +569,8 @@ const HomePage: React.FC = () => {
                             handleDeleteUser={handleDeleteUser}
                             setSelectedUser={setSelectedUser}
                             handleOverlayClick={handleOverlayClick}
-                            handleUpdateMainUser={handleUpdateMainUser} />
+                            handleUpdateMainUser={handleUpdateMainUser}
+                            isPasswordEditing={isPasswordEditing} setIsPasswordEditing={setIsPasswordEditing} />
                     </div>
 
 
