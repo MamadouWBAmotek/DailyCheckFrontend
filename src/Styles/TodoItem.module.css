@@ -1,27 +1,43 @@
 .todo-item {
-    width: 98%;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 100%;
     /* Bordure gris clair */
+    height: 80px;
     border-radius: 10px;
     /* Coins arrondis */
-    background-color: #F0F5F5;
     /* Couleur de fond blanche */
     /* Couleur du texte */
-    padding: 20px;
-
     text-align: left;
     /* Aligne le texte à gauche */
     cursor: pointer;
     /* Pointeur pour indiquer qu'il s'agit d'un bouton */
     transition: background-color 0.3s ease, transform 0.2s ease;
-    margin: 3px 1.3%; /* Centrage horizontal avec marge automatique */
+    /* Centrage horizontal avec marge automatique */
 }
 
-.todo-item:hover {
-    background-color: #E1E8F0;
-    /* Couleur au survol */
-    transform: scale(1.02);
-    /* Zoom au survol */
+.table {
+    width: 100%;
+    left: 20%;
+    top: 180px;
+    padding: 20px;
+    height: 50px;
+    border-radius: 5px;
+}
+
+
+td,
+th {
+    /* border: 1px solid #b46262;
+    text-align: left; */
+    padding: 10px;
+}
+
+.delete {
+    color: #C62828;
+    
+}
+
+.edit {
+    color: #2D9CDB;
 }
 
 .todoitem-content {
@@ -41,7 +57,35 @@
 
 }
 
+.todo-itemli {
+    display: flex;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 1196px;
+    /* Bordure gris clair */
+    border-radius: 10px;
+    /* Coins arrondis */
+    /* Couleur de fond blanche */
+    /* Couleur du texte */
+    text-align: left;
+    /* Aligne le texte à gauche */
+    cursor: pointer;
+    /* Pointeur pour indiquer qu'il s'agit d'un bouton */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-left: 10px;
+    margin-bottom: 10px;
+}
 
+.todo-itemli:hover {
+    background-color: #E1E8F0;
+    /* Couleur au survol */
+    transform: scale(1.01);
+    /* Zoom au survol */
+}
+
+.todo-itemli:hover .todo-item {
+    background-color: #E1E8F0;
+
+}
 
 .dealinetored {
     color: red;

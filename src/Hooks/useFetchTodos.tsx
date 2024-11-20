@@ -8,15 +8,17 @@ type FetchTodosByStatusOptions = {
     userId: string;
     toFetchStatus?: Status;
     userStatus?: Role;
-    triggerUpdate?: boolean; // Status optionnel pour filtrer par statut
+    triggerUpdate?: boolean;
+    isLoading?: boolean;
+    setIsLoading: (isLoading: boolean) => void;
 };
 
-export const useFetchTodosByStatus = ({ userId, toFetchStatus, triggerUpdate, userStatus }: FetchTodosByStatusOptions) => {
+export const useFetchTodosByStatus = ({ userId, toFetchStatus, triggerUpdate, userStatus,setIsLoading,isLoading }: FetchTodosByStatusOptions) => {
     const [usersTodos, setUsersTodos] = useState<ToDo[]>([]);
     const [allTodos, setAllTodos] = useState<ToDo[]>([]);
     const [users, setUsers] = useState<User[]>([]);
     const [Fetchingrror, setFetchingrror] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(false); // Adding a loading indicator
+    // const [isLoading, setIsLoading] = useState<boolean>(false); // Adding a loading indicator
 
     useEffect(() => {
         const fetchTodos = async () => {

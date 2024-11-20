@@ -15,11 +15,13 @@ import ToDoItem from '../Components/ToDoItem';
 import { Role } from '../Models/Roles';
 import { User } from '../Components/User';
 import UserItem from '../Components/UserItem';
-import UserDetailsModal from '../Components/UserDetails';
+import UserDetailsModal from '../Components/MainUserDetails';
 import CreateUserModal from '../Components/CreateUserModal';
 import { registerUser } from '../Utils/RegisterUser';
 import e from 'express';
 import { UserUpdateViewModel } from '../Models/UpdateUserViewModel';
+import { width } from '@fortawesome/free-solid-svg-icons/fa0';
+import MainUserDetailsModal from '../Components/UserDetails';
 
 
 const HomePage: React.FC = () => {
@@ -30,6 +32,7 @@ const HomePage: React.FC = () => {
     const [isToDoModalOpen, setIsToDoModalOpen] = useState(false);
     const [isUserModalOpen, setIsUserModalOpen] = useState(false);
     const [isUserDetailsModalOpen, setIsUserDetailsModalOpen] = useState(false);
+    const [isMainUserDetailsModalOpen, setIsMainUserDetailsModalOpen] = useState(false);
 
     const [selectedTodo, setSelectedTodo] = useState<ToDo | null>(null);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -63,7 +66,7 @@ const HomePage: React.FC = () => {
     const [userId] = useState(String(user?.id));
     const [userStatus] = useState(user?.role);
     const [toFetchStatus, setToFetchStatus] = useState<Status | undefined>(undefined);
-    const { usersTodos, Fetchingrror, allTodos, users } = useFetchTodosByStatus({ userId, toFetchStatus, triggerUpdate, userStatus });
+    const { usersTodos, Fetchingrror, allTodos, users } = useFetchTodosByStatus({ userId, toFetchStatus, triggerUpdate, userStatus, isLoading, setIsLoading });
     const [todosUserId, setTodosUserId] = useState<string>('');
     // const [users, setUsers] = useState<User[]>([]);
     const [showUsers, setShowUsers] = useState(false);
@@ -74,7 +77,6 @@ const HomePage: React.FC = () => {
 
     const handleStatusChange = (selectedStatus: Status | undefined) => {
         if (selectedStatus == undefined) {
-            setShowUsersTodosOnly(false)
             setShowUsers(false)
             setShowUsersOnly(false)
         }
@@ -95,9 +97,11 @@ const HomePage: React.FC = () => {
     };
     // Close the modal
     const closeModal = () => {
+        setTriggerUpdate(true);
+        setIsMainUserDetailsModalOpen(false);
+        setIsUserDetailsModalOpen(false);
         setError('');
         setIsPasswordEditing(false);
-        setTriggerUpdate(true);
         setIsEditing(false);
         setIsUserEditing(false);
         if (isCreateModalOpen == true) {
@@ -123,6 +127,7 @@ const HomePage: React.FC = () => {
             setIsToDoModalOpen(false);
             setError(null);
         }
+
     };
 
     // Handling the creation of a new To-Do
@@ -183,17 +188,24 @@ const HomePage: React.FC = () => {
 
     const ShowTodoDetails = (todo: ToDo) => {
         setSelectedTodo(todo); // Set the selected To-Do
-        setIsEditing(false);
+        // setIsEditing(false);
         setIsToDoModalOpen(true); // Open the modal
+        // setTodosUserId(todo.userId)
+    };
+    const ShowMainUserDetails = (user: User) => {
+        setSelectedUser(user); // Set the selected To-Do
+        // setIsEditing(false);
+        setIsUserDetailsModalOpen(true);
+        setIsEditing(true) // Open the modal
         // setTodosUserId(todo.userId)
     };
     const ShowUserDetails = (user: User) => {
         setSelectedUser(user); // Set the selected To-Do
-        setIsEditing(false);
-        setIsUserDetailsModalOpen(true); // Open the modal
+        // setIsEditing(false);
+        setIsMainUserDetailsModalOpen(true);
+        setIsEditing(true) // Open the modal
         // setTodosUserId(todo.userId)
     };
-
 
     const handleUpdateUser = async (user: User) => {
         setTriggerUpdate(false);
@@ -362,6 +374,12 @@ const HomePage: React.FC = () => {
     const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
 
         if (e.target === e.currentTarget) {
+            setIsUserDetailsModalOpen(false);
+            setIsMainUserDetailsModalOpen(false)
+            setIsUserEditing(false);
+            // setIsEditing(false)
+            setIsPasswordEditing(false);
+            setIsMainUser(false);
             if (isCreateModalOpen == true) {
                 closeModal();
             }
@@ -420,10 +438,10 @@ const HomePage: React.FC = () => {
         <div className={styles.homepage}>
             <div className={styles.header}>
                 <h1>Daily Check</h1>
-                <button onClick={() => { setIsMainUser(true); user ? ShowUserDetails(user) : '' }}><FontAwesomeIcon icon={faUser}></FontAwesomeIcon></button>
+                <button onClick={() => { setIsMainUser(true); user ? ShowMainUserDetails(user) : '' }}><FontAwesomeIcon icon={faUser}></FontAwesomeIcon></button>
                 <div className={styles['main-content-header']}>
                     {!showUsers ?
-                        <h1>{showUsersTodosOnly ? <span> My </span> : <span> All </span>}  {toFetchStatus != undefined && toFetchStatus != Status.Users ? Status[toFetchStatus] : ""} To-Dos</h1>
+                        <h1>{showUsersTodosOnly ? <h1 style={{ display: "inline" }}> My </h1> : <h1 style={{ display: "inline" }}> All </h1>}  {toFetchStatus != undefined && toFetchStatus != Status.Users ? Status[toFetchStatus] : ""} To-Dos</h1>
                         : <h1>Users</h1>}
                     {isLoading && <p>Loading...</p>}
                     {Fetchingrror && <p style={{ color: 'red' }}>{Fetchingrror}</p>}
@@ -432,19 +450,61 @@ const HomePage: React.FC = () => {
                         : <button type='button' className={styles['main-content-createButton']} onClick={() => { setIsCreateUserModalOpen(true); setTriggerUpdate(false) }}>Create User</button>}
 
 
+
                 </div>
+
             </div>
+            {!showUsers && !isAdminUser ?
+                <div style={{ backgroundColor: 'red', width: '100px' }}>
+                    <table className={styles['table']}>
+                        <tr className={styles['tablerow']}>
+                            <th style={{ width: '21%', paddingLeft: '15px' }}>Title</th>
+                            <th style={{ width: '30%' }}>Description</th>
+                            <th style={{ width: "30%", }}>Deadline</th>
+                            <th style={{ width: "8.2%", }}>Delete</th>
+                            <th style={{ width: "10.2%", textAlign: 'center', paddingRight: '35px' }}>Edit</th>
+                        </tr>
+                    </table>
+                </div> : ''}
+            {isAdminUser && !showUsers ?
+                <div style={{ backgroundColor: 'red', width: '100px' }}>
+                    <table className={styles['table']}>
+                        <tr className={styles['tablerow']}>
+                            <th style={{ width: '21%', paddingLeft: '15px' }}>Title</th>
+                            <th style={{ width: '30%' }}>{!showUsersTodosOnly ? 'CreatedBy' : 'Description'}</th>
+                            {/* {!showUsersTodosOnly ? <th style={{ width: "30%", }}>CreatedBy</th> : ''} */}
+                            <th style={{ width: "30%", }}>Deadline</th>
+                            <th style={{ width: "8.2%", }}>Delete</th>
+                            <th style={{ width: "10.2%", textAlign: 'center', paddingRight: '35px' }}>Edit</th>
+                        </tr>
+                    </table>
+                </div> : ''}
+            {showUsers ?
+                <div style={{ backgroundColor: 'red', width: '100px' }}>
+
+
+                    <table className={styles['table']}>
+                        <tr className={styles['tablerow']}>
+                            <th style={{ width: '21%', paddingLeft: '15px' }}>Username</th>
+                            <th style={{ width: '30%' }}>Email</th>
+                            <th style={{ width: "30%", }}>Status</th>
+                            <th style={{ width: "8.2%", }}>Delete</th>
+                            <th style={{ width: "10.2%", textAlign: 'center', paddingRight: '35px' }}>Edit</th>
+                        </tr>
+                    </table>
+                </div> : ''}
+
 
             <div className={styles['main-container']}>
                 <div className={styles.sidebar}>
 
                     <ul>
-                        <li onClick={() => handleStatusChange(undefined)} >All ToDos</li>
+                        <h1>ToDos</h1>
                         {user?.role === Role.Admin && (
                             <li>
                                 <label className="switch">
                                     <span className="slider"></span>
-                                    <span className="slider-label">Show my todos only</span>
+                                    <span className="slider-label">Show mines only</span>
                                     <input
                                         type="checkbox"
                                         className={styles['switch']}
@@ -458,18 +518,22 @@ const HomePage: React.FC = () => {
 
 
                         )}
+                        <li onClick={() => handleStatusChange(undefined)} >All</li>
+
                         <li onClick={() => handleStatusChange(Status.Upcoming)}>Upcoming</li>
-                        <li onClick={() => handleStatusChange(Status.Done)}>Done ToDos</li>
-                        <li onClick={() => handleStatusChange(Status.Cancelled)}>Cancelled ToDos</li>
-                        {user?.role === Role.Admin && (
-                            <li
-                                onClick={() => handleStatusChange(Status.Users)}
-                            // aria-disabled={showUsersTodosOnly}
-                            >Get Users
-                            </li>
+                        <li onClick={() => handleStatusChange(Status.Done)}>Done</li>
+                        <li onClick={() => handleStatusChange(Status.Cancelled)}>Cancelled</li>
+                        {user?.role === Role.Admin ?
+                            <div>     <h1>Users</h1>
+
+                                <li
+                                    onClick={() => handleStatusChange(Status.Users)}
+                                // aria-disabled={showUsersTodosOnly}
+                                >Get Users
+                                </li></div> : ''
 
 
-                        )}
+                        }
                     </ul>
                 </div>
                 <div className={styles['main-content']}>
@@ -481,7 +545,10 @@ const HomePage: React.FC = () => {
                                 <ul className={styles['todo-list']}>
                                     {users.length > 0 ? (
                                         users.map(user => (
-                                            <UserItem key={user.id} user={user} onClick={() => { setIsMainUser(false); ShowUserDetails(user) }} />
+                                            <UserItem key={user.id}
+                                                user={user}
+                                                ShowUserDetails={ShowUserDetails} isEditing={isUserEditing}
+                                                setIsEditing={setIsUserEditing} handleDeleteUser={handleDeleteUser} />
                                         )
                                         )
                                     ) : (
@@ -492,7 +559,10 @@ const HomePage: React.FC = () => {
                                 <ul className={styles['todo-list']}>
                                     {allTodos.length > 0 ? (
                                         allTodos.map(todo => (
-                                            <ToDoItem userId={user?.id.toString() || ''} key={todo.id} todo={todo} isAdminUser={isAdminUser} showMyToDos={showUsersTodosOnly} onClick={() => ShowTodoDetails(todo)} />
+                                            <ToDoItem userId={user?.id.toString() || ''}
+                                                key={todo.id} todo={todo} isAdminUser={isAdminUser}
+                                                showMyToDos={showUsersTodosOnly} ShowTodoDetails={ShowTodoDetails}
+                                                isEditing={isEditing} setIsEditing={setIsEditing} handleDeleteTodo={handleDeleteTodo} />
                                         ))
                                     ) : (
                                         ""
@@ -501,7 +571,11 @@ const HomePage: React.FC = () => {
                             <ul className={styles['todo-list']}>
                                 {usersTodos.length > 0 ? (
                                     usersTodos.map(todo => (
-                                        <ToDoItem userId={user?.id.toString() || ''} key={todo.id} todo={todo} isAdminUser={isAdminUser} showMyToDos={showUsersTodosOnly} onClick={() => ShowTodoDetails(todo)} />
+                                        <ToDoItem userId={user?.id.toString() || ''}
+                                            key={todo.id} todo={todo} isAdminUser={isAdminUser}
+                                            showMyToDos={showUsersTodosOnly} ShowTodoDetails={() => ShowTodoDetails(todo)}
+                                            isEditing={isEditing} setIsEditing={setIsEditing}
+                                            handleDeleteTodo={handleDeleteTodo} />
                                     ))
                                 ) : (
                                     ""
@@ -550,19 +624,14 @@ const HomePage: React.FC = () => {
                             handleChangeStatus={handleChangeStatus}
                             setSelectedTodo={setSelectedTodo} // Ajoutez cette ligne
                             handleOverlayClick={handleOverlayClick} />
-                        {/* <UserModal
-                            isOpen={isUserModalOpen}
-                            closeModal={() => { setIsUserModalOpen(false); }}
-                            userName={user?.userName}
-                            handleOverlayClick={handleOverlayClick}
-                        /> */}
+
                         <UserDetailsModal
                             isMainUser={isMainUser}
                             setIsMainUser={setIsMainUser}
                             error={error}
                             setError={setError}
                             isOpen={isUserDetailsModalOpen}
-                            closeModal={() => { setIsUserDetailsModalOpen(false); setIsUserEditing(false); }}
+                            closeModal={closeModal}
                             selectedUser={selectedUser} isEditing={isUserEditing}
                             setIsEditing={setIsUserEditing}
                             handleUpdateUser={handleUpdateUser}
@@ -570,7 +639,15 @@ const HomePage: React.FC = () => {
                             setSelectedUser={setSelectedUser}
                             handleOverlayClick={handleOverlayClick}
                             handleUpdateMainUser={handleUpdateMainUser}
-                            isPasswordEditing={isPasswordEditing} setIsPasswordEditing={setIsPasswordEditing} />
+                            isPasswordEditing={isPasswordEditing}
+                            setIsPasswordEditing={setIsPasswordEditing}
+                        />
+
+                        <MainUserDetailsModal isOpen={isMainUserDetailsModalOpen} error={error} setError={setError}
+                            closeModal={closeModal} selectedUser={selectedUser} isEditing={isUserEditing}
+                            setIsEditing={setIsUserEditing} handleUpdateUser={handleUpdateUser}
+                            handleDeleteUser={handleDeleteUser}
+                            setSelectedUser={setSelectedUser} handleOverlayClick={handleOverlayClick} />
                     </div>
 
 
