@@ -1,10 +1,10 @@
 // components/ToDoItem.tsx
 import React from 'react';
-import styles from '../Styles/TodoItem.module.css';
+import styles from '../Styles/Item.module.css';
 import { User } from './User';
-import { Role } from '../Models/Roles';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { useFetchTodosByStatus } from '../Hooks/useFetchTodos';
 
 interface UserItemProps {
     user: User;
@@ -12,45 +12,49 @@ interface UserItemProps {
     isEditing: boolean;
     setIsEditing: (isEditing: boolean) => void;
     handleDeleteUser: (user: User) => Promise<void>;
+    isLoading?: boolean;
+    setIsLoading: (isLoading: boolean) => void;
 
 }
-
-const UserItem: React.FC<UserItemProps> = ({ user, ShowUserDetails, isEditing, setIsEditing, handleDeleteUser }) => {
+const UserItem: React.FC<UserItemProps> = ({ user, ShowUserDetails, isEditing, isLoading, setIsLoading, setIsEditing, handleDeleteUser }) => {
+    const { usersTotalTodos } = useFetchTodosByStatus({
+        userId: String(user.id),
+        toFetchStatus: undefined,
+        setIsLoading: setIsLoading
+    });
+    console.log("this is de     amount  are de users todos", usersTotalTodos);
     return (
-        <li className={styles['todo-itemli']}>
-            <button className={styles['todo-item']} onClick={() => ShowUserDetails(user)}>
-                {/* <div className={styles['todo-title']}>
+        <div className={styles['todo-itemli']}>
+            <div style={{ width: '100%', display: 'flex', }}>
 
-                </div> */}
-                <table className={styles['table']}>
-                    <td style={{ width: '20%' }}>{user.userName}</td>
-                    <td style={{ width: '30%' }}>{user.email}</td>
-                    <td style={{ width: '30%' }}>{Role[user.role]}</td>
-                </table>
-            </button>
-            <td style={{ width: '10%', textAlign: 'center' }}>
-
-                <button className={styles['delete']} onClick={(e) => { e.preventDefault(); handleDeleteUser(user) }}>
-                    <FontAwesomeIcon icon={faTrash} size='xl' />
-                </button>
-            </td>
-            <td style={{ width: '10%', textAlign: 'center' }}>
-                <button type='button' className={styles['edit']} onClick={() => { setIsEditing(true); ShowUserDetails(user); }}>
-                    <FontAwesomeIcon icon={faPenToSquare} size='xl' />
-                </button>
-            </td>
-            {/* <button className={styles['todo-item']} onClick={onClick}>
-
-                <div className={styles['todoitem-content']}>
-
-                    <div>
-                        <h1 >{user.userName}</h1>
-                        <h1> Status: {Role[user.role]}</h1>
-                    </div>
-                    <h1>{user.email}</h1>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: '10%', }}>
+                    <button title='Edit Task' type='button' className={styles['edit']} onClick={() => { ShowUserDetails(user); setIsEditing(true); }}>
+                        <FontAwesomeIcon icon={faPenToSquare} size='xl' />
+                    </button>
+                    {/* <button title='Cancel Task' className={styles['cancel']} onClick={() => handleChangeStatus(todo, Status.Cancelled)}><FontAwesomeIcon icon={faXmark} size='xl' color='orange' /></button> */}
                 </div>
-            </button> */}
-        </li>
+
+                <div onClick={() => ShowUserDetails(user)} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: '80%', textAlign: 'center' }}>
+                    <h1><b> {user.userName.toLocaleUpperCase()}</b></h1>
+
+                    <p>User has {usersTotalTodos} To-Do(s)</p>
+                    {/* <p> <b style={{ textDecoration: 'underline' }}> Description</b>{': '}
+                        {user.description.length >= 30 ? (<>
+                            {todo.description.substring(0, 30)}...{''}
+                        </>) : (todo.description)}</p>
+                    <p> <b style={{ textDecoration: 'underline' }}> Deadline</b>{': '}  {todo.deadline.substring(0, 10)} at <strong style={{ color: changeBgColor ? 'orange' : '' }}>{todo.deadline.substring(11, 16)}</strong> </p> */}
+
+                </div>
+
+
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: '10%', }}>
+                    <button title='Delete Task' className={styles['delete']} onClick={(e) => { e.preventDefault(); handleDeleteUser(user); }}>
+                        <FontAwesomeIcon icon={faTrash} size='xl' />
+                    </button>
+                    {/* <button title='Task Done' className={styles['done']} onClick={() => handleChangeStatus(todo, Status.Done)}><FontAwesomeIcon icon={faSquareCheck} size='xl' color='green' /></button> */}
+                </div>
+            </div>
+        </div >
     );
 };
 

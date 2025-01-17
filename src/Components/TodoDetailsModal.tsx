@@ -5,16 +5,15 @@ import { Status } from '../Models/Status';
 import { setegid } from 'process';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faTrash, faCheck, faXmark, faPenToSquare, faSquareCheck } from '@fortawesome/free-solid-svg-icons';
+import { useFetchTodosByStatus } from '../Hooks/useFetchTodos';
 interface TodoDetailsModalProps {
     isOpen: boolean;
     closeModal: () => void;
     selectedTodo: ToDo | null;
     isEditing: boolean;
     setIsEditing: (isEditing: boolean) => void;
-    handleUpdateTodo: (todo: ToDo) => Promise<void>;
-    handleDeleteTodo: (todo: ToDo) => Promise<void>;
+    handleUpdateTodo: (e: React.FormEvent, todo: ToDo) => Promise<void>;
     handleOverlayClick: (e: React.MouseEvent<HTMLDivElement>) => void;
-    handleChangeStatus: (todoId: number, newStatus: Status) => Promise<void>;
     setSelectedTodo: (todo: ToDo) => void; // Ajoutez cette ligne
 }
 
@@ -25,8 +24,7 @@ const TodoDetailsModal: React.FC<TodoDetailsModalProps> = ({
     isEditing,
     setIsEditing,
     handleUpdateTodo,
-    handleDeleteTodo,
-    handleChangeStatus,
+
     handleOverlayClick,
     setSelectedTodo // Ajoutez cette ligne ici
 }) => {
@@ -36,42 +34,44 @@ const TodoDetailsModal: React.FC<TodoDetailsModalProps> = ({
         <div className={styles.modal} onClick={handleOverlayClick}>
             <div className={styles['modal-content']}>
                 <span className={styles.close} onClick={closeModal}>&times;</span>
+                <h1 style={{ textAlign: 'center', width: '100%' }}>{isEditing ? `Edit ${Status[selectedTodo.status]} To-Do` : `${Status[selectedTodo.status]} To-Do Details`}</h1>
                 <form>
-                    <h3>{isEditing ? `Edit ${Status[selectedTodo.status]} To-Do` : `${Status[selectedTodo.status]} To-Do Details`}</h3>
+                    <label htmlFor="title">Title</label>
                     <input
+                        autoFocus={isEditing}
                         type="text"
                         value={selectedTodo.title}
-                        onChange={(e) => setSelectedTodo({ ...selectedTodo, title: e.target.value })} // Correction ici
+                        onChange={(e) => setSelectedTodo({ ...selectedTodo, title: e.target.value })}
                         disabled={!isEditing}
                         placeholder='Title'
                     />
-                    <input
-                        type="text"
+                    <label htmlFor="description">Description</label>
+                    <textarea
+                        rows={selectedTodo.description.length >= 150 ?
+                            ((selectedTodo.description.length * 2) / 150) % 1 !== 0 ? ((selectedTodo.description.length * 2) / 150) + 1 : 0 : 2
+
+                        }
+
                         value={selectedTodo.description}
-                        onChange={(e) => setSelectedTodo({ ...selectedTodo, description: e.target.value })} // Correction ici
+                        onChange={(e) => setSelectedTodo({ ...selectedTodo, description: e.target.value })}
                         disabled={!isEditing}
                         placeholder='Description'
 
                     />
+                    <label htmlFor="deadline">Deadline</label>
                     <input
                         type="datetime-local"
                         disabled={!isEditing}
-                        value={new Date(selectedTodo.deadline).toISOString().slice(0, 16)}
-                        onChange={(e) => setSelectedTodo({ ...selectedTodo, deadline: e.target.value })} // Correction ici
+                        value={selectedTodo.deadline.slice(0, 19)}
+                        onChange={(e) => setSelectedTodo({ ...selectedTodo, deadline: e.target.value })}
                     />
 
                     <div className={styles['button-container']}>
-                        {isEditing ? (
+                        {isEditing && (
                             <>
-                                <button className={styles['cancel']} onClick={(e) => { setIsEditing(false); e.preventDefault() }}><FontAwesomeIcon icon={faArrowLeft}></FontAwesomeIcon></button>
-                                <button type='button' className={styles['save']} onClick={(e) => { e.preventDefault; handleUpdateTodo(selectedTodo) }}><FontAwesomeIcon icon={faCheck}></FontAwesomeIcon></button>
+                                <button title='Go back' className={styles['cancel']} onClick={(e) => { setIsEditing(false)}}><FontAwesomeIcon icon={faArrowLeft} color='orange'></FontAwesomeIcon></button>
+                                <button title='Save' type='submit' className={styles['save']} onClick={(e) => {  handleUpdateTodo(e,selectedTodo) }}><FontAwesomeIcon icon={faCheck} color='green'></FontAwesomeIcon></button>
                             </>
-                        ) : (
-                            <>
-                                <button className={styles['delete']} onClick={() => handleDeleteTodo(selectedTodo)}><FontAwesomeIcon icon={faTrash}></FontAwesomeIcon></button>
-                                {selectedTodo.status == Status.Upcoming ? <button className={styles['cancel']} onClick={() => handleChangeStatus(selectedTodo.id, Status.Cancelled)}><FontAwesomeIcon icon={faXmark}></FontAwesomeIcon></button> : ""}
-                                <button className={styles['edit']} onClick={() => setIsEditing(true)}><FontAwesomeIcon icon={faPenToSquare}></FontAwesomeIcon></button>
-                                {selectedTodo.status == Status.Upcoming ? <button className={styles['done']} onClick={() => handleChangeStatus(selectedTodo.id, Status.Done)}><FontAwesomeIcon icon={faSquareCheck}></FontAwesomeIcon></button> : ""}                            </>
                         )}
                     </div>
                 </form>

@@ -9,8 +9,6 @@
     /* Increased bottom margin */
 
 }
-
-
 /* Styling for input fields */
 .iconInput input {
     width: 100%;
@@ -30,13 +28,6 @@
     z-index: 0;
     /* Smooth transition for border color */
 }
-
-
-/* .iconInput input[type=password] {
-    width: 90%;
-    display: inline;
-    Full width for input fields
-} */
 
 /* Input field focus styling */
 .iconInput input:focus {

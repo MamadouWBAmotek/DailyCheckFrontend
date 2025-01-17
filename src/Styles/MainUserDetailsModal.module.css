@@ -4,7 +4,6 @@
     left: 0;
     right: 0;
     bottom: 0;
-    /* background: rgba(255, 255, 255, 0.5); */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -19,26 +18,20 @@
     border-radius: 12px;
     background-color: #664343;
     width: 600px;
-    height: 410px;
-    /* Largeur fixe pour le modal */
-    display: flex;
+    height: 460px;
     flex-direction: column;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     color: #FFF0D1;
-    /* Ombre du modal */
 }
 
 .modal-content input {
     background-color: #D0D0D0;
-    /* Espacement entre les champs */
-    margin: 5px 0;
+    margin: 15px 0;
     padding: 12px;
     border-radius: 8px;
     border: 1px solid #bdc3c7;
-    /* Bordure gris clair */
     transition: border-color 0.3s ease;
     width: 100%;
-    /* Prend toute la largeur */
 }
 
 .modal-content div>input {
@@ -50,75 +43,60 @@
 
 .modal-content input:focus {
     border-color: #3B3030;
-    /* Couleur de bordure au focus */
     outline: none;
-    /* Supprime l'outline par défaut */
 }
 
 .modal-content button {
     margin-top: 15px;
     padding: 12px;
     border-radius: 6px;
-    /* background-color: #34495E; */
     color: #FFF0D1;
     border: none;
     transition: background-color 0.3s;
-    background-color: #794b4b;
-    /* margin:15px 40%; */
+ 
 }
 
-.modal-content button:hover {
-    background-color: #34495E;
-    transform: scale(1.05);
 
-    /* Couleur du bouton au hover */
-}
 
 .close {
     font-size: 24px;
     cursor: pointer;
+    display: flex;
+    align-self: flex-end;
 }
 
 .close:hover {
     color: red;
 }
 
-.button-container button {
-    width: 80px;
-}
+
 
 .button-container {
     display: flex;
     justify-content: space-between;
 }
 
-.button-container button:hover {
-    transform: scale(1.2);
-    /* Zoom à 1.5 lors du survol */
-}
+.button-container .changePassword:hover {
+    border: 1px solid #5bc0de;
 
-.button-container .save:hover {
-    background-color: #27ae60;
-    /* Couleur au survol pour le bouton Save */
 }
 
 .button-container .cancel:hover {
-    background-color: #ffa07a;
-
-    /* Couleur au survol pour le bouton Cancel */
+    border: 1px solid orange;
 }
 
-.button-container .edit:hover {
-    background-color: #5B7F93;
-    /* Couleur au survol pour le bouton Edit */
+.button-container .save:hover {
+    border: 1px solid green;
 }
 
-.button-container .delete:hover {
-    background-color: #D94E4B;
-    /* Couleur au survol pour le bouton Delete */
-}
+@media screen and (max-width: 768px) {
+    .modal-content {
+    
+        width:400px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        color: #FFF0D1;
+    }
 
-.button-container .done:hover {
-    background-color: #27ae60;
-    /* Couleur au survol pour le bouton Done */
 }

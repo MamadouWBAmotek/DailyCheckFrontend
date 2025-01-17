@@ -40,20 +40,23 @@
     margin-left: 80%;
     padding: 12px;
     border-radius: 6px;
-    background-color: #34495E;
-    color: white;
+    background-color: #664343;
+    color: #FFF0D1;
     border: none;
     transition: background-color 0.3s;
 }
 
 .modal-content button:hover {
-    background-color: #5C7A92;
+    background-color: #795757;
     transform: scale(1.05);
 }
 
 .close {
     font-size: 24px;
     cursor: pointer;
+    display: flex;
+    align-self: flex-end;
+    color: red;
 }
 
 .close:hover {

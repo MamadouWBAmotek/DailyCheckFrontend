@@ -1,27 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ToDo } from '../Models/ToDo';
 import { Status } from '../Models/Status';
-import styles from '../Styles/Home.module.css'; // Importation des styles CSS Modules
+import styles from '../Styles/Home.module.css';
 import { useAuth } from '../Components/Auth';
 import { ToDoViewModel } from '../Models/ToDoViewModel';
 import { useFetchTodosByStatus } from '../Hooks/useFetchTodos';
-import Logout from '../Components/Logout';
 import { faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import TodoDetailsModal from '../Components/TodoDetailsModal';
 import CreateTodoModal from '../Components/CreateTodoModal';
-// import UserModal from '../Components/UserModal';
 import ToDoItem from '../Components/ToDoItem';
 import { Role } from '../Models/Roles';
 import { User } from '../Components/User';
 import UserItem from '../Components/UserItem';
 import UserDetailsModal from '../Components/MainUserDetails';
 import CreateUserModal from '../Components/CreateUserModal';
-import { registerUser } from '../Utils/RegisterUser';
-import e from 'express';
 import { UserUpdateViewModel } from '../Models/UpdateUserViewModel';
-import { width } from '@fortawesome/free-solid-svg-icons/fa0';
 import MainUserDetailsModal from '../Components/UserDetails';
+import useChangeStatus from '../Hooks/useChangeStatus';
 
 
 const HomePage: React.FC = () => {
@@ -49,53 +45,48 @@ const HomePage: React.FC = () => {
     const [title, setTitle] = useState<string>('');
     const [description, setDescription] = useState<string>('');
     const [deadline, setDeadline] = useState<string>('');
-    const [status, setStatus] = useState<Status>(Status.Upcoming);
-    const [isDone, setIsDone] = useState(false);
-    const [isCancelled, setIsCancelled] = useState(false);
+
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(false); // Adding a loading indicator
+    const [isLoading, setIsLoading] = useState<boolean>(false); 
     const { user, setIsauth, setUser } = useAuth();
-    const inputRef = useRef<HTMLInputElement>(null);
     const [triggerUpdate, setTriggerUpdate] = useState(false);
     const [isAdminUser, setIsAdminUser] = useState(false);
     const [showUsersTodosOnly, setShowUsersTodosOnly] = useState(false);
-    const [showUsersOnly, setShowUsersOnly] = useState(false);
     const [isMainUser, setIsMainUser] = useState<boolean>(false);
 
     const [userId] = useState(String(user?.id));
     const [userStatus] = useState(user?.role);
     const [toFetchStatus, setToFetchStatus] = useState<Status | undefined>(undefined);
-    const { usersTodos, Fetchingrror, allTodos, users } = useFetchTodosByStatus({ userId, toFetchStatus, triggerUpdate, userStatus, isLoading, setIsLoading });
-    const [todosUserId, setTodosUserId] = useState<string>('');
-    // const [users, setUsers] = useState<User[]>([]);
+    const { usersTodos, Fetchingrror, users } = useFetchTodosByStatus({ userId, toFetchStatus, triggerUpdate, isLoading, setIsLoading });
+    const {
+        success: changeTodosStatusSucces,
+        error: changeTodosStatusError,
+        isLoading: changeTodosStatusIsLoading,
+        triggerUpdate: changeTodosStatusTriggerUpdate,
+        handleChangeStatus,
+    } = useChangeStatus();
     const [showUsers, setShowUsers] = useState(false);
     useEffect(() => {
-        if (user?.role == 0) setIsAdminUser(true)
-    }, [user]);
+        setTriggerUpdate(changeTodosStatusTriggerUpdate)
+    }, [changeTodosStatusTriggerUpdate]);
 
 
     const handleStatusChange = (selectedStatus: Status | undefined) => {
         if (selectedStatus == undefined) {
             setShowUsers(false)
-            setShowUsersOnly(false)
         }
 
         else if (selectedStatus == Status.Users) {
             setShowUsers(true)
             setShowUsersTodosOnly(false)
-            setShowUsersOnly(true)
-
         }
         else {
             setShowUsers(false)
-            setShowUsersOnly(false)
 
         }
         setToFetchStatus(selectedStatus);
-        console.log(status)
     };
-    // Close the modal
     const closeModal = () => {
         setTriggerUpdate(true);
         setIsMainUserDetailsModalOpen(false);
@@ -130,22 +121,16 @@ const HomePage: React.FC = () => {
 
     };
 
-    // Handling the creation of a new To-Do
     const handleCreateTodo = async (e: React.FormEvent): Promise<void> => {
-        if (!title || !description || !deadline) {
-            setError('Please fill in all fields');
-        }
-        console.log("this is in the methode");
-
-        const formattedDeadline = new Date(deadline).toISOString();
+        e.preventDefault();
+        const formattedDeadline = new Date(deadline);
         const model: ToDoViewModel = {
             Title: title,
             Description: description,
-            UserEmail: user?.email.toString() || '', // Use user ID from context
-            UserId: user?.id.toString() || '', // Use user ID from context
+            UserEmail: user?.email.toString() || '',
+            UserId: user?.id.toString() || '',
             Deadline: formattedDeadline,
         };
-        console.log("this is the model", model);
 
         try {
             const response = await fetch('http://localhost:5144/api/todo/create', {
@@ -154,20 +139,20 @@ const HomePage: React.FC = () => {
                 body: JSON.stringify(model),
             });
             const data = await response.json();
-
             if (response.ok) {
-                // Close the modal after creation
+                if (triggerUpdate == true) {
+                    setTriggerUpdate(false)
+                } else {
+                    setTriggerUpdate(true)
+                }
+                closeModal();
                 setSuccess(`To-Do "${data.todo.title}" created successfully!`);
-
-
                 setTimeout(() => {
-                    closeModal();
-                    setTriggerUpdate(true);
-                }, 1000);
-
+                    setSuccess(null)
+                }, 1500);
             }
-            else if (response.status == 400 && data.message == "The deadline cannot be in the past.") {
-                console.log("the deadline is the past");
+
+            else if (response.status == 400) {
                 setError("The deadline cannot be in the past.");
             }
             else {
@@ -182,29 +167,96 @@ const HomePage: React.FC = () => {
             }
         }
         finally {
+            setIsLoading(false)
+        }
+    };
+    const ShowTodoDetails = (todo: ToDo) => {
+        setSelectedTodo(todo);
+        setIsToDoModalOpen(true);
+    };
 
+    const handleUpdateTodo = async (e: React.FormEvent, todo: ToDo) => {
+        e.preventDefault();
+        const formattedDeadline = new Date(todo.deadline).toISOString();
+        todo.deadline = formattedDeadline;
+        try {
+            const response = await fetch('http://localhost:5144/api/todo/update', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(todo),
+            });
+
+            if (response.ok) {
+                if (triggerUpdate == true) {
+                    setTriggerUpdate(false)
+                } else {
+                    setTriggerUpdate(true)
+                }
+                setIsToDoModalOpen(false);
+                setSuccess(`To-Do "${todo.title}" updated successfully!`);
+                setTimeout(() => {
+                    setSuccess(null)
+                }, 1500);
+            } else {
+                setIsToDoModalOpen(false);
+                const errorData = await response.json();
+                setError(errorData.message || 'Failed to update To-Do');
+                setTimeout(() => {
+                    setError('')
+                    setTriggerUpdate(true)
+                }, 1500);
+                setTriggerUpdate(false)
+            }
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                setError(`Error: ${error.message}`);
+            } else {
+                setError('Unknown error occurred.');
+            }
+        }
+    };
+    const handleDeleteTodo = async (todo: ToDo) => {
+
+        const confirmChange = window.confirm('Are you sure you want to delete this To-Do?');
+        if (!confirmChange) return;
+        setIsLoading(true);
+
+        try {
+            const response = await fetch('http://localhost:5144/api/todo/delete', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(todo),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                if (triggerUpdate == true) {
+                    setTriggerUpdate(false)
+                } else {
+                    setTriggerUpdate(true)
+                }
+                setSuccess(`To-Do "${todo.title}" deleted successfully!`);
+                setTimeout(() => {
+                    setSuccess(null)
+                }, 1500);
+                setTriggerUpdate(false)
+            }
+
+        } catch (error) {
+            setError('Error deleting todo!');
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const ShowTodoDetails = (todo: ToDo) => {
-        setSelectedTodo(todo); // Set the selected To-Do
-        // setIsEditing(false);
-        setIsToDoModalOpen(true); // Open the modal
-        // setTodosUserId(todo.userId)
-    };
     const ShowMainUserDetails = (user: User) => {
-        setSelectedUser(user); // Set the selected To-Do
-        // setIsEditing(false);
+        setSelectedUser(user); 
         setIsUserDetailsModalOpen(true);
-        setIsEditing(true) // Open the modal
-        // setTodosUserId(todo.userId)
+        setIsEditing(true) 
     };
     const ShowUserDetails = (user: User) => {
-        setSelectedUser(user); // Set the selected To-Do
-        // setIsEditing(false);
+        setSelectedUser(user); 
         setIsMainUserDetailsModalOpen(true);
-        setIsEditing(true) // Open the modal
-        // setTodosUserId(todo.userId)
+        setIsEditing(true) 
     };
 
     const handleUpdateUser = async (user: User) => {
@@ -220,7 +272,6 @@ const HomePage: React.FC = () => {
                 if (userId == user.id.toString()) {
                     setUser(user);
                 }
-                console.log(data.message);
                 setSuccess(`User "${user.userName}" updated successfully!`);
                 closeModal();
                 setTimeout(() => {
@@ -228,7 +279,6 @@ const HomePage: React.FC = () => {
                 }, 2000);
             } else {
                 setError(data.message);
-                console.log(error);
             }
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -249,9 +299,7 @@ const HomePage: React.FC = () => {
             });
             const data = await response.json();
             if (response.ok) {
-                console.log("this is user", data.user);
                 setUser(data.user)
-                console.log(data.message);
                 setSuccess(`User "${user.userName}" updated successfully!`);
                 closeModal();
                 setTimeout(() => {
@@ -259,7 +307,6 @@ const HomePage: React.FC = () => {
                 }, 2000);
             } else {
                 setError(data.message);
-                console.log(error);
             }
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -277,14 +324,11 @@ const HomePage: React.FC = () => {
         setIsLoading(true);
 
         try {
-            // Vérification du corps de la requête
             const requestBody = { userId: user.id.toString() };
-            console.log("Request body:", requestBody);
-
             const response = await fetch('http://localhost:5144/api/login/delete', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody), // Assurez-vous que le format est correct
+                body: JSON.stringify(requestBody), 
             });
 
             if (response.ok) {
@@ -307,70 +351,6 @@ const HomePage: React.FC = () => {
     };
 
 
-    const handleDeleteTodo = async (todo: ToDo) => {
-
-        const confirmChange = window.confirm('Are you sure you want to change the status of this To-Do?');
-        if (!confirmChange) return;
-        setIsLoading(true);
-
-        try {
-            const response = await fetch('http://localhost:5144/api/todo/delete', {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(todo),
-            });
-            const data = await response.json();
-            if (response.ok) {
-                setIsToDoModalOpen(false);
-                setSuccess(`To-Do "${todo.title}" deleted successfully!`);
-            }
-
-        } catch (error) {
-            setError('Error deleting todo!'); // Gère les erreurs lors de la requête.
-        } finally {
-            setIsLoading(false); // Arrête l'indicateur de chargement.
-        }
-    };
-
-    const handleChangeStatus = async (todoId: number, newStatus: Status) => {
-        const confirmChange = window.confirm('Are you sure you want to change the status of this To-Do?');
-        if (!confirmChange) return; // Si l'utilisateur annule, on sort de la fonction.
-
-        setIsLoading(true); // Démarre l'indicateur de chargement.
-
-        const requestBody = {
-            TodoId: todoId,
-            NewStatus: newStatus,
-        };
-
-        try {
-            const response = await fetch('http://localhost:5144/api/todo/changestatus', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody),
-            });
-            console.log(requestBody);
-            const data = await response.json(); // Récupère la réponse JSON.
-
-            // Gestion des réponses en fonction du statut
-            if (response.status === 400 && data.message === "To-Do item already cancelled") {
-                setError("To-Do item already cancelled"); // Message d'erreur spécifique.
-            } else if (response.ok) {
-                setSuccess("To-Do's status successfully changed!");
-                setIsToDoModalOpen(false);
-                // Ferme le modal si l'opération réussit.
-                // Vous pouvez ici recharger les To-Dos si nécessaire.
-
-            } else {
-                // Si la réponse n'est pas ok, affiche une erreur générale.
-                setError(data.message || 'Failed to change To-Do status');
-            }
-        } catch (error) {
-            setError('Error changing To-Do status.'); // Gère les erreurs lors de la requête.
-        } finally {
-            setIsLoading(false); // Arrête l'indicateur de chargement.
-        }
-    };
     const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
 
         if (e.target === e.currentTarget) {
@@ -385,51 +365,16 @@ const HomePage: React.FC = () => {
             }
             else if (isCreateUserModalOpen == true) {
                 closeModal();
-
-                // setIsCreateUserModalOpen(false);
-
             }
             else if (isToDoModalOpen == true) {
                 closeModal();
 
-                // setIsToDoModalOpen(false);
             }
             else if (isUserModalOpen == true) {
                 closeModal();
-
-                // setIsUserModalOpen(false)
             }
             else {
                 closeModal();
-
-                // setIsUserDetailsModalOpen(false);
-
-            }
-        }
-    };
-    const handleUpdateTodo = async (todo: ToDo) => {
-
-        const formattedDeadline = new Date(todo.deadline).toISOString()
-        todo.deadline = formattedDeadline;
-        try {
-            const response = await fetch('http://localhost:5144/api/todo/update', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(todo),
-            });
-
-            if (response.ok) {
-                setSuccess(`To-Do "${todo.title}" updated successfully!`);
-                setIsToDoModalOpen(false);
-            } else {
-                const errorData = await response.json();
-                setError(errorData.message || 'Failed to update To-Do');
-            }
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                setError(`Error: ${error.message}`);
-            } else {
-                setError('Unknown error occurred.');
             }
         }
     };
@@ -441,95 +386,38 @@ const HomePage: React.FC = () => {
                 <button onClick={() => { setIsMainUser(true); user ? ShowMainUserDetails(user) : '' }}><FontAwesomeIcon icon={faUser}></FontAwesomeIcon></button>
                 <div className={styles['main-content-header']}>
                     {!showUsers ?
-                        <h1>{showUsersTodosOnly ? <h1 style={{ display: "inline" }}> My </h1> : <h1 style={{ display: "inline" }}> All </h1>}  {toFetchStatus != undefined && toFetchStatus != Status.Users ? Status[toFetchStatus] : ""} To-Dos</h1>
+                        <h1>
+                            {toFetchStatus != undefined && toFetchStatus != Status.Users ? Status[toFetchStatus] : "Upcoming"} {toFetchStatus == Status.All ? "To-Dos" : "To-Do(s)"} </h1>
                         : <h1>Users</h1>}
                     {isLoading && <p>Loading...</p>}
                     {Fetchingrror && <p style={{ color: 'red' }}>{Fetchingrror}</p>}
-                    {success && <div className={styles.success}>{success}</div>}
+                    {error || changeTodosStatusError && <div className={styles.error}>{error} {changeTodosStatusError}</div>}
+                    {success || changeTodosStatusSucces && <div className={styles.success}>{success}{changeTodosStatusSucces}</div>}
                     {!showUsers ? <button className={styles['main-content-createButton']} onClick={() => { setIsCreateModalOpen(true); setTriggerUpdate(false) }}>Create To-Do</button>
                         : <button type='button' className={styles['main-content-createButton']} onClick={() => { setIsCreateUserModalOpen(true); setTriggerUpdate(false) }}>Create User</button>}
-
-
 
                 </div>
 
             </div>
-            {!showUsers && !isAdminUser ?
-                <div style={{ backgroundColor: 'red', width: '100px' }}>
-                    <table className={styles['table']}>
-                        <tr className={styles['tablerow']}>
-                            <th style={{ width: '21%', paddingLeft: '15px' }}>Title</th>
-                            <th style={{ width: '30%' }}>Description</th>
-                            <th style={{ width: "30%", }}>Deadline</th>
-                            <th style={{ width: "8.2%", }}>Delete</th>
-                            <th style={{ width: "10.2%", textAlign: 'center', paddingRight: '35px' }}>Edit</th>
-                        </tr>
-                    </table>
-                </div> : ''}
-            {isAdminUser && !showUsers ?
-                <div style={{ backgroundColor: 'red', width: '100px' }}>
-                    <table className={styles['table']}>
-                        <tr className={styles['tablerow']}>
-                            <th style={{ width: '21%', paddingLeft: '15px' }}>Title</th>
-                            <th style={{ width: '30%' }}>{!showUsersTodosOnly ? 'CreatedBy' : 'Description'}</th>
-                            {/* {!showUsersTodosOnly ? <th style={{ width: "30%", }}>CreatedBy</th> : ''} */}
-                            <th style={{ width: "30%", }}>Deadline</th>
-                            <th style={{ width: "8.2%", }}>Delete</th>
-                            <th style={{ width: "10.2%", textAlign: 'center', paddingRight: '35px' }}>Edit</th>
-                        </tr>
-                    </table>
-                </div> : ''}
-            {showUsers ?
-                <div style={{ backgroundColor: 'red', width: '100px' }}>
-
-
-                    <table className={styles['table']}>
-                        <tr className={styles['tablerow']}>
-                            <th style={{ width: '21%', paddingLeft: '15px' }}>Username</th>
-                            <th style={{ width: '30%' }}>Email</th>
-                            <th style={{ width: "30%", }}>Status</th>
-                            <th style={{ width: "8.2%", }}>Delete</th>
-                            <th style={{ width: "10.2%", textAlign: 'center', paddingRight: '35px' }}>Edit</th>
-                        </tr>
-                    </table>
-                </div> : ''}
-
 
             <div className={styles['main-container']}>
                 <div className={styles.sidebar}>
 
                     <ul>
-                        <h1>ToDos</h1>
-                        {user?.role === Role.Admin && (
-                            <li>
-                                <label className="switch">
-                                    <span className="slider"></span>
-                                    <span className="slider-label">Show mines only</span>
-                                    <input
-                                        type="checkbox"
-                                        className={styles['switch']}
-                                        checked={showUsersTodosOnly}
-                                        onChange={() => { setShowUsersTodosOnly((prev) => !prev); setShowUsers(false); }}
-                                    // disabled={showUsers}
-                                    />
-
-                                </label>
-                            </li>
-
-
-                        )}
-                        <li onClick={() => handleStatusChange(undefined)} >All</li>
+                        <h1 >ToDos</h1>
 
                         <li onClick={() => handleStatusChange(Status.Upcoming)}>Upcoming</li>
                         <li onClick={() => handleStatusChange(Status.Done)}>Done</li>
                         <li onClick={() => handleStatusChange(Status.Cancelled)}>Cancelled</li>
+                        <li onClick={() => handleStatusChange(Status.Expired)} >Expired</li>
+                        <li onClick={() => handleStatusChange(Status.All)} >All</li>
+
                         {user?.role === Role.Admin ?
                             <div>     <h1>Users</h1>
 
                                 <li
-                                    onClick={() => handleStatusChange(Status.Users)}
-                                // aria-disabled={showUsersTodosOnly}
-                                >Get Users
+                                    onClick={() => { handleStatusChange(Status.Users); setShowUsers(true) }}>
+                                    Get Users
                                 </li></div> : ''
 
 
@@ -539,8 +427,7 @@ const HomePage: React.FC = () => {
                 <div className={styles['main-content']}>
 
                     <div>
-                        {isAdminUser && !showUsersTodosOnly ?
-
+                        {
                             showUsers ?
                                 <ul className={styles['todo-list']}>
                                     {users.length > 0 ? (
@@ -548,7 +435,8 @@ const HomePage: React.FC = () => {
                                             <UserItem key={user.id}
                                                 user={user}
                                                 ShowUserDetails={ShowUserDetails} isEditing={isUserEditing}
-                                                setIsEditing={setIsUserEditing} handleDeleteUser={handleDeleteUser} />
+                                                setIsEditing={setIsUserEditing} handleDeleteUser={handleDeleteUser}
+                                                setIsLoading={setIsLoading} />
                                         )
                                         )
                                     ) : (
@@ -557,30 +445,18 @@ const HomePage: React.FC = () => {
                                 </ul>
                                 :
                                 <ul className={styles['todo-list']}>
-                                    {allTodos.length > 0 ? (
-                                        allTodos.map(todo => (
+                                    {usersTodos.length > 0 ? (
+                                        usersTodos.map(todo => (
                                             <ToDoItem userId={user?.id.toString() || ''}
                                                 key={todo.id} todo={todo} isAdminUser={isAdminUser}
                                                 showMyToDos={showUsersTodosOnly} ShowTodoDetails={ShowTodoDetails}
-                                                isEditing={isEditing} setIsEditing={setIsEditing} handleDeleteTodo={handleDeleteTodo} />
+                                                isEditing={isEditing} setIsEditing={setIsEditing} handleDeleteTodo={handleDeleteTodo}
+                                                handleChangeStatus={handleChangeStatus} />
                                         ))
                                     ) : (
                                         ""
                                     )}
-                                </ul> :
-                            <ul className={styles['todo-list']}>
-                                {usersTodos.length > 0 ? (
-                                    usersTodos.map(todo => (
-                                        <ToDoItem userId={user?.id.toString() || ''}
-                                            key={todo.id} todo={todo} isAdminUser={isAdminUser}
-                                            showMyToDos={showUsersTodosOnly} ShowTodoDetails={() => ShowTodoDetails(todo)}
-                                            isEditing={isEditing} setIsEditing={setIsEditing}
-                                            handleDeleteTodo={handleDeleteTodo} />
-                                    ))
-                                ) : (
-                                    ""
-                                )}
-                            </ul>}
+                                </ul>}
 
                         <CreateTodoModal
                             isOpen={isCreateModalOpen}
@@ -620,9 +496,7 @@ const HomePage: React.FC = () => {
                             isEditing={isEditing}
                             setIsEditing={setIsEditing}
                             handleUpdateTodo={handleUpdateTodo}
-                            handleDeleteTodo={handleDeleteTodo}
-                            handleChangeStatus={handleChangeStatus}
-                            setSelectedTodo={setSelectedTodo} // Ajoutez cette ligne
+                            setSelectedTodo={setSelectedTodo}
                             handleOverlayClick={handleOverlayClick} />
 
                         <UserDetailsModal
@@ -641,7 +515,7 @@ const HomePage: React.FC = () => {
                             handleUpdateMainUser={handleUpdateMainUser}
                             isPasswordEditing={isPasswordEditing}
                             setIsPasswordEditing={setIsPasswordEditing}
-                        />
+                            isLoading={isLoading} setIsLoading={setIsLoading} />
 
                         <MainUserDetailsModal isOpen={isMainUserDetailsModalOpen} error={error} setError={setError}
                             closeModal={closeModal} selectedUser={selectedUser} isEditing={isUserEditing}
@@ -663,5 +537,3 @@ const HomePage: React.FC = () => {
 };
 
 export default HomePage;
-
-

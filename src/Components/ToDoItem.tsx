@@ -1,9 +1,10 @@
 // components/ToDoItem.tsx
 import React, { useEffect, useState } from 'react';
 import { ToDo } from '../Models/ToDo';
-import styles from '../Styles/TodoItem.module.css';
+import styles from '../Styles/Item.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faPenToSquare, faSquareCheck, faTrash, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { Status } from '../Models/Status';
 
 interface ToDoItemProps {
     todo: ToDo;
@@ -14,66 +15,54 @@ interface ToDoItemProps {
     isEditing: boolean;
     setIsEditing: (isEditing: boolean) => void;
     handleDeleteTodo: (todo: ToDo) => Promise<void>;
-
+    handleChangeStatus: (todo: ToDo, newStatus: Status) => Promise<void>;
 }
-
-const ToDoItem: React.FC<ToDoItemProps> = ({ todo, ShowTodoDetails, isAdminUser, showMyToDos, userId, isEditing, setIsEditing, handleDeleteTodo }) => {
+const ToDoItem: React.FC<ToDoItemProps> = ({ todo, ShowTodoDetails, setIsEditing, handleDeleteTodo, handleChangeStatus }) => {
     const [changeBgColor, setChangeBgColor] = useState<boolean>(false);
+
+    const today = new Date(Date.now());
+    const aDayBefore = new Date(todo.deadline); // Crée un objet Date
+    aDayBefore.setDate(aDayBefore.getDate() - 1); // Modifie la date
+    const aDayBeforeTheDealine = new Date(aDayBefore);
+    // aDayBeforeTheDealine
+    // const isItAlmostExpired = 
+    ;
     useEffect(() => {
-        if (new Date(todo.deadline) < new Date()) {
+
+        if (todo.status != Status.Done && todo.status != Status.Cancelled && aDayBeforeTheDealine.toString() <= today.toString()) {
             setChangeBgColor(true);
         }
     }, [todo.deadline]);
     return (
-        <li className={styles['todo-itemli']}>
-            <button className={styles['todo-item']} onClick={() => ShowTodoDetails(todo)}>
-                {/* <div className={styles['todo-title']}>
+        <div className={changeBgColor ? styles['todo-itemli-whilealmostexpired'] : styles['todo-itemli']}>
+            <div style={{ width: '100%', display: 'flex' }}>
 
-                </div> */}
-                <table className={styles['table']}>
-                    <td style={{ width: '20%' }}>{todo.title}</td>
-                    <td style={{ width: '30%' }}>{!showMyToDos && isAdminUser ? todo.userEmail : todo.description}</td>
-                    {/* {(!showMyToDos && isAdminUser) && <td style={{ width: '20%' }}>{todo.userEmail}</td>
-                    } */}
-                    <td style={{ width: '30%' }}>{new Date(todo.deadline).toISOString().slice(0, 16)}</td>
-                </table>
-            </button>
-            <td style={{ width: '10%', textAlign: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: '10%', }}>
+                    <button title='Edit Task' type='button' className={styles['edit']} onClick={() => { ShowTodoDetails(todo); setIsEditing(true); }}>
+                        <FontAwesomeIcon icon={faPenToSquare} size='xl' />
+                    </button>
+                    <button title='Cancel Task' className={styles['cancel']} onClick={() => handleChangeStatus(todo, Status.Cancelled)}><FontAwesomeIcon icon={faXmark} size='xl' color='orange' /></button>
+                </div>
 
-                <button className={styles['delete']} onClick={(e) => { e.preventDefault(); handleDeleteTodo(todo); }}>
-                    <FontAwesomeIcon icon={faTrash} size='xl' />
-                </button>
-            </td>
-            <td style={{ width: '10%', textAlign: 'center' }}>
-                <button type='button' className={styles['edit']} onClick={() => { ShowTodoDetails(todo); setIsEditing(true); }}>
-                    <FontAwesomeIcon icon={faPenToSquare} size='xl' />
-                </button>
-            </td>
-            {/* <div className={styles[changeBgColor ? 'todoitem-expired' : 'todoitem-content']}>
+                <div onClick={() => ShowTodoDetails(todo)} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: '80%', textAlign: 'center' }}>
+                    <h1><b> {todo.title.toLocaleUpperCase()}</b></h1>
+                    <p> <b style={{ textDecoration: 'underline' }}> Description</b>{': '}
+                        {todo.description.length >= 30 ? (<>
+                            {todo.description.substring(0, 30)}...{''}
+                        </>) : (todo.description)}</p>
+                    <p> <b style={{ textDecoration: 'underline' }}> Deadline</b>{': '}  {todo.deadline.toString().substring(0, 10)} at <strong style={{ color: changeBgColor ? 'orange' : '' }}>{todo.deadline.toString().substring(11, 16)}</strong> </p>
 
-                    <div>
-                        <h1 >{todo.title}</h1>
-                        {isAdminUser && !showMyToDos ? <h1> Created by: {userId == todo.userId ? "You" : todo.userEmail}</h1> : ''}
-                    </div>
-                    <h1 className={styles[changeBgColor ? 'dealinetored' : '']}>{new Date(todo.deadline).toLocaleString()}</h1>
-
-                    {/ <p>Created by </p><h1>{todo.userEmail}</h1>
-                    <p>Description</p> <h1>{todo.description}</h1> /}
-
-                </div> */}
-
-            {/* <div style={{
-                width: '10%', display: 'flex', marginBottom: '3px', justifyContent: 'space-between',
-                alignItems: 'center', padding: '20px', borderRadius: '10px',
-            }}>
+                </div>
 
 
-                
-            </div> */}
-
-
-
-        </li>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: '10%', }}>
+                    <button title='Delete Task' className={styles['delete']} onClick={(e) => { e.preventDefault(); handleDeleteTodo(todo); }}>
+                        <FontAwesomeIcon icon={faTrash} size='xl' />
+                    </button>
+                    <button title='Task Done' className={styles['done']} onClick={() => handleChangeStatus(todo, Status.Done)}><FontAwesomeIcon icon={faSquareCheck} size='xl' color='green' /></button>
+                </div>
+            </div>
+        </div >
     );
 };
 

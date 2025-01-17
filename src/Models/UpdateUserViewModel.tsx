@@ -1,5 +1,4 @@
 import { Role } from "./Roles";
-
 export interface UserUpdateViewModel {
     id: number;
     userName: string;

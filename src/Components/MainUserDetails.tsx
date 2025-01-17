@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ToDo } from '../Models/ToDo';
 import styles from '../Styles/MainUserDetailsModal.module.css';
 import { Status } from '../Models/Status';
@@ -13,6 +13,8 @@ interface MainUserDetailsModalProps {
     isOpen: boolean;
     error: string | null;
     setError: (error: string) => void;
+    isLoading: boolean | null;
+    setIsLoading: (isLoading: boolean) => void;
     closeModal: () => void;
     selectedUser: User | null;
     isEditing: boolean;
@@ -26,6 +28,7 @@ interface MainUserDetailsModalProps {
     handleDeleteUser: (user: User) => Promise<void>;
     setSelectedUser: (user: User) => void;
     handleOverlayClick: (e: React.MouseEvent<HTMLDivElement>) => void;
+
 }
 
 const MainUserDetailsModal: React.FC<MainUserDetailsModalProps> = ({
@@ -37,6 +40,7 @@ const MainUserDetailsModal: React.FC<MainUserDetailsModalProps> = ({
     setIsPasswordEditing,
     isMainUser, setIsMainUser,
     error, setError,
+    isLoading, setIsLoading,
     setIsEditing,
     handleUpdateUser,
     handleUpdateMainUser,
@@ -51,7 +55,13 @@ const MainUserDetailsModal: React.FC<MainUserDetailsModalProps> = ({
     const [showOldPassword, setShowOldPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const inputRef = useRef<HTMLInputElement | null>(null);
 
+    useEffect(() => {
+        if (isEditing && inputRef.current) {
+            inputRef.current.focus(); // Donne le focus au champ
+        }
+    }, [isEditing]);
     const toggleOldPasswordVisibility = () => {
         setShowOldPassword(!showOldPassword);
     };
@@ -70,7 +80,7 @@ const MainUserDetailsModal: React.FC<MainUserDetailsModalProps> = ({
         newPassword: confirmPassword || ''
     }
     const handleMainUserSaveOnclick = () => {
-
+        setIsLoading(true);
         if (newPassword !== confirmPassword) {
             setError("Passwords do not match!")
             setOldPassword('');
@@ -114,6 +124,7 @@ const MainUserDetailsModal: React.FC<MainUserDetailsModalProps> = ({
             setShowNewPassword(false)
             setShowConfirmPassword(false)
         }
+        setIsLoading(false);
     }
 
     if (!isOpen || !selectedUser) return null;
@@ -169,6 +180,7 @@ const MainUserDetailsModal: React.FC<MainUserDetailsModalProps> = ({
                         <div style={{ display: 'flex', flexDirection: 'column', }}>
                             <label htmlFor="Username">Username</label>
                             <input style={{ width: "100%" }}
+                                ref={inputRef}
                                 type="text"
                                 value={selectedUser.userName}
                                 onChange={(e) => setSelectedUser({ ...selectedUser, userName: e.target.value })}
@@ -188,81 +200,86 @@ const MainUserDetailsModal: React.FC<MainUserDetailsModalProps> = ({
 
                     {(isMainUser && isEditing && isPasswordEditing) ?
                         <div>
+                            <div>
+                                <i style={{
+                                    position: 'absolute', top: '145px', left: '26px',
+                                    zIndex: '1',
+                                    fontSize: '16px',
+                                    // cursor:'pointer'
 
-                            <i style={{
-                                position: 'absolute', top: '107px', left: '26px',
-                                zIndex: '1',
-                                fontSize: '16px',
-                                // cursor:'pointer'
+                                }}><FontAwesomeIcon icon={faLock}></FontAwesomeIcon></i>
+                                <input
+                                    style={{ width: '100%', paddingLeft: "30px" }}
+                                    type={showOldPassword ? 'text' : 'password'}
+                                    value={oldPassword}
+                                    onChange={(e) => setOldPassword(e.target.value)}
+                                    disabled={!isEditing}
+                                    placeholder='Old password'
+                                />
+                                <i style={{
+                                    position: 'absolute', top: '145px', right: '40px',
+                                    zIndex: '2',
+                                    fontSize: '16px',
 
-                            }}><FontAwesomeIcon icon={faLock}></FontAwesomeIcon></i>
-                            <input
-                                style={{ width: '100%', paddingLeft: "30px" }}
-                                type={showOldPassword ? 'text' : 'password'}
-                                value={oldPassword}
-                                onChange={(e) => setOldPassword(e.target.value)}
-                                disabled={!isEditing}
-                                placeholder='Old password'
-                            />
-                            <i style={{
-                                position: 'absolute', top: '107px', right: '40px',
-                                zIndex: '2',
-                                fontSize: '16px',
+                                }} onClick={() => toggleOldPasswordVisibility()} >
+                                    <FontAwesomeIcon icon={faEye}></FontAwesomeIcon>
+                                </i>
+                            </div>
 
-                            }} onClick={() => toggleOldPasswordVisibility()} >
-                                <FontAwesomeIcon icon={faEye}></FontAwesomeIcon>
-                            </i>
+                            <div>
 
+                                <i style={{
+                                    position: 'absolute', top: '232px', left: '26px',
+                                    zIndex: '1',
+                                    fontSize: '16px',
+                                    // cursor:'pointer'
 
-                            <i style={{
-                                position: 'absolute', top: '173px', left: '26px',
-                                zIndex: '1',
-                                fontSize: '16px',
-                                // cursor:'pointer'
+                                }}><FontAwesomeIcon icon={faLock}></FontAwesomeIcon></i>
 
-                            }}><FontAwesomeIcon icon={faLock}></FontAwesomeIcon></i>
+                                <input
+                                    style={{ width: '100%', paddingLeft: "30px" }}
 
-                            <input
-                                style={{ width: '100%', paddingLeft: "30px" }}
+                                    type={showNewPassword ? 'text' : 'password'}
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    placeholder='New password'
+                                    disabled={!isEditing}
+                                />
+                                <i style={{
+                                    position: 'absolute', top: '232px', right: '40px',
+                                    zIndex: '2',
+                                    fontSize: '16px',
 
-                                type={showNewPassword ? 'text' : 'password'}
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
-                                placeholder='New password'
-                                disabled={!isEditing}
-                            />
-                            <i style={{
-                                position: 'absolute', top: '173px', right: '40px',
-                                zIndex: '2',
-                                fontSize: '16px',
+                                }} onClick={() => toggleNewPasswordVisibility()} >
+                                    <FontAwesomeIcon icon={faEye}></FontAwesomeIcon>
+                                </i>
+                            </div>
+                            <div>
 
-                            }} onClick={() => toggleNewPasswordVisibility()} >
-                                <FontAwesomeIcon icon={faEye}></FontAwesomeIcon>
-                            </i>
+                                <i style={{
+                                    position: 'absolute', top: '317px', left: '26px',
+                                    zIndex: '1',
+                                    fontSize: '16px',
+                                    // cursor:'pointer'
 
-                            <i style={{
-                                position: 'absolute', top: '238px', left: '26px',
-                                zIndex: '1',
-                                fontSize: '16px',
-                                // cursor:'pointer'
+                                }}><FontAwesomeIcon icon={faLock}></FontAwesomeIcon></i>
+                                <input
+                                    style={{ width: '100%', paddingLeft: "30px" }}
+                                    type={showConfirmPassword ? 'text' : 'password'}
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    placeholder='Confirm new Password'
+                                    disabled={!isEditing}
+                                />
+                                <i style={{
+                                    position: 'absolute', top: '317px', right: '40px',
+                                    zIndex: '2',
+                                    fontSize: '16px',
 
-                            }}><FontAwesomeIcon icon={faLock}></FontAwesomeIcon></i>
-                            <input
-                                style={{ width: '100%', paddingLeft: "30px" }}
-                                type={showConfirmPassword ? 'text' : 'password'}
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                placeholder='Confirm new Password'
-                                disabled={!isEditing}
-                            />
-                            <i style={{
-                                position: 'absolute', top: '238px', right: '40px',
-                                zIndex: '2',
-                                fontSize: '16px',
-
-                            }} onClick={() => toggleConfirmPasswordVisibility()} >
-                                <FontAwesomeIcon icon={faEye}></FontAwesomeIcon>
-                            </i>
+                                }} onClick={() => toggleConfirmPasswordVisibility()} >
+                                    <FontAwesomeIcon icon={faEye}></FontAwesomeIcon>
+                                </i>
+                            </div>
 
                         </div> : ""}
                     {!isMainUser ? <select
@@ -277,17 +294,19 @@ const MainUserDetailsModal: React.FC<MainUserDetailsModalProps> = ({
                             </option>
                         ))}
                     </select> : ''}
-                    {error && <p style={{ color: 'red', margin: '5px auto', backgroundColor: "", textAlign: 'center' }}>{error}</p>}
+                    {error && <p style={{ color: 'red', margin: '5px auto', textAlign: 'center' }}>{error}</p>}
+                    {isLoading && <p style={{ textAlign: 'center' }}>Loading...</p>}
+
                     <div className={styles['button-container']}>
                         {isEditing ? (
                             <>
                                 <button className={styles['cancel']} onClick={(e) => { setIsPasswordEditing(false); e.preventDefault(); setIsEditing(false); closeModal(); setError('') }}>
-                                    <FontAwesomeIcon icon={faArrowLeft} />
+                                    <FontAwesomeIcon icon={faArrowLeft} color='orange' />
                                 </button>
-                                {!isPasswordEditing && isMainUser ? <button style={{ padding: '0' }} type='button' onClick={(e) => { e.preventDefault(); setIsPasswordEditing(true) }}>Change Password</button> : ""}
+                                {!isPasswordEditing && isMainUser ? <button className={styles['changePassword']} type='button' onClick={(e) => { e.preventDefault(); setIsPasswordEditing(true), setError('') }}>Change Password</button> : ""}
 
                                 <button type='submit' className={styles['save']}>
-                                    <FontAwesomeIcon icon={faCheck} />
+                                    <FontAwesomeIcon icon={faCheck} color='green' />
                                 </button>
                             </>
                         ) : (

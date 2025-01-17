@@ -28,7 +28,7 @@ const CreateTodoModal: React.FC<CreateTodoModalProps> = ({
                 <span className={styles.close} onClick={closeModal}>&times;</span>
                 <form onSubmit={handleCreateTodo}>
                     <h3>Create To-Do</h3>
-                    <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Title" />
+                    <input autoFocus type="text" value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Title" />
                     <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} required placeholder="Description" />
                     <input type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} required />
                     <button type='submit'>Create</button>

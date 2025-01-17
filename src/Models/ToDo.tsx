@@ -1,4 +1,3 @@
-// models/ToDo.t
 import { Status } from "./Status";
 export interface ToDo {
     id: number;

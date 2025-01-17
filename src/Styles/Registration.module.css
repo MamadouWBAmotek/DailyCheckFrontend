@@ -1,9 +1,7 @@
-/* Set global body styles */
 body {
     font-family: 'Helvetica Neue', Arial, sans-serif;
 }
 
-/* Container for the registration form */
 .container {
     display: flex;
     flex-direction: column;
@@ -11,41 +9,24 @@ body {
     margin: 22px 0 0 30px;
     background-color: #794b4b;
     color: #D0D0D0;
-
-    /* Background color for the container */
     border-radius: 20px;
-    /* Rounded corners */
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    /* Soft shadow effect */
     padding: 40px;
-    /* Internal spacing */
     min-width: 600px;
     height: 650px;
-
-    /* Minimum width for the container */
     transition: max-width 0.3s ease;
-    /* Smooth transition for width changes */
 }
-
-/* Responsive styles for smaller screens */
 @media (max-width: 768px) {
     .container {
         width: 90%;
-        /* Make container more responsive on smaller screens */
         padding: 20px;
-        /* Adjust padding for smaller screens */
     }
 }
 
-/* Legend styling for the form title */
 .legend {
     font-size: 28px;
-    /* Increased font size */
     font-weight: bold;
-    /* Bold text */
     text-align: center;
-    /* Center text */
-    /* Increased bottom margin */
 }
 
 
@@ -53,19 +34,12 @@ i {
     color: #888;
 }
 
-/* Error message styling */
 .error {
     text-align: center;
     color: red;
-    /* Color for error messages */
     margin-top: 10px;
     /* Margin for spacing */
 }
-
-/* Button styling */
-
-
-
 
 /* Google sign-in section styling */
 .googlesignindiv {
@@ -104,7 +78,3 @@ i {
     /* Font size for the link */
 }
 
-/* Hover effect for the login link */
-/* .logindiv a:hover {
-    text-decoration: underline;
-} */

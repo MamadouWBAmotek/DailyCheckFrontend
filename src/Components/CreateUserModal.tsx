@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import styles from '../Styles/CreateModal.module.css'; // Assurez-vous que le chemin est correct
+import styles from '../Styles/CreateModal.module.css'; 
 import { registerUser } from "../Utils/RegisterUser";
 import { Role } from "../Models/Roles";
 
@@ -60,7 +60,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
                 <span className={styles.close} onClick={closeModal}>&times;</span>
                 <form onSubmit={handleCreateUser}>
                     <h3>Create User</h3>
-                    <input type="text" value={userName} onChange={(e) => setUserName(e.target.value)} placeholder="Username" required />
+                    <input autoFocus type="text" value={userName} onChange={(e) => setUserName(e.target.value)} placeholder="Username" required />
                     <input type="email" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" value={email}
                         onChange={(e) => setEmail(e.target.value)} required placeholder="Email" />
                     <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="Password" />

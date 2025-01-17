@@ -1,12 +1,9 @@
-import React from 'react';
-import { ToDo } from '../Models/ToDo';
+import React, { useEffect, useRef } from 'react';
 import styles from '../Styles/UserDetailsModal.module.css';
-import { Status } from '../Models/Status';
 import { User } from './User';
 import { Role } from '../Models/Roles';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faCheck, faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
-import { UserUpdateViewModel } from '../Models/UpdateUserViewModel';
 
 interface UserDetailsModalProps {
     isOpen: boolean;
@@ -34,7 +31,15 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
     setSelectedUser,
     handleOverlayClick
 }) => {
+    const inputRef = useRef<HTMLInputElement | null>(null);
+
+    useEffect(() => {
+        if (isEditing && inputRef.current) {
+            inputRef.current.focus(); // Donne le focus au champ
+        }
+    }, [isEditing]);
     if (!isOpen || !selectedUser) return null;
+
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
         if (e.key === 'Enter') {
@@ -63,6 +68,7 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                     <h1 style={{ textAlign: "center" }}>{isEditing ? 'Edit User' : 'User Details'}</h1>
                     <label htmlFor="username">Username</label>
                     <input
+                        ref={inputRef}
                         type="text"
                         value={selectedUser.userName}
                         onChange={(e) => setSelectedUser({ ...selectedUser, userName: e.target.value })}
@@ -75,7 +81,10 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                         onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })}
                         disabled={!isEditing}
                         pattern={isEditing ? "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$" : undefined}
-                        required={isEditing} />
+                        required={isEditing}
+                    />
+
+                    <label htmlFor="Status">Status</label>
                     <select
                         name="status"
                         id="status"
@@ -92,22 +101,13 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                         {error && <p style={{ color: 'red', margin: '20px auto' }}>{error}</p>}
                     </div>
                     <div className={styles['button-container']}>
-                        {isEditing ? (
+                        {isEditing && (
                             <>
                                 <button className={styles['cancel']} onClick={(e) => { e.preventDefault(); setIsEditing(false); }}>
-                                    <FontAwesomeIcon icon={faArrowLeft} />
+                                    <FontAwesomeIcon icon={faArrowLeft} color='orange'/>
                                 </button>
                                 <button type='submit' className={styles['save']} onClick={(e) => { e.preventDefault(); handleUpdateUser(selectedUser); }}>
-                                    <FontAwesomeIcon icon={faCheck} />
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <button className={styles['delete']} onClick={(e) => { e.preventDefault(); handleDeleteUser(selectedUser); }}>
-                                    <FontAwesomeIcon icon={faTrash} />
-                                </button>
-                                <button type='submit' className={styles['edit']} onClick={(e) => { e.preventDefault(); setIsEditing(true); }}>
-                                    <FontAwesomeIcon icon={faPenToSquare} />
+                                    <FontAwesomeIcon icon={faCheck} color='green'/>
                                 </button>
                             </>
                         )}

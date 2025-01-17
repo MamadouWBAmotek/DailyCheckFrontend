@@ -1,30 +1,34 @@
 import { useState, useEffect } from 'react';
 import { ToDo } from '../Models/ToDo';
 import { Status } from '../Models/Status';
-import { Role } from '../Models/Roles';
 import { User } from '../Components/User';
+import useChangeStatus from './useChangeStatus';
+
+
 
 type FetchTodosByStatusOptions = {
     userId: string;
     toFetchStatus?: Status;
-    userStatus?: Role;
     triggerUpdate?: boolean;
     isLoading?: boolean;
     setIsLoading: (isLoading: boolean) => void;
 };
 
-export const useFetchTodosByStatus = ({ userId, toFetchStatus, triggerUpdate, userStatus,setIsLoading,isLoading }: FetchTodosByStatusOptions) => {
+export const useFetchTodosByStatus = ({ userId, toFetchStatus, triggerUpdate, setIsLoading, isLoading }: FetchTodosByStatusOptions) => {
     const [usersTodos, setUsersTodos] = useState<ToDo[]>([]);
-    const [allTodos, setAllTodos] = useState<ToDo[]>([]);
+    const [usersTotalTodos, setUsersTotalTodos] = useState<number>();
     const [users, setUsers] = useState<User[]>([]);
     const [Fetchingrror, setFetchingrror] = useState<string | null>(null);
-    // const [isLoading, setIsLoading] = useState<boolean>(false); // Adding a loading indicator
-
+    const {
+        success: changeTodosStatusSucces,
+        error: changeTodosStatusError,
+        isLoading: changeTodosStatusIsLoading,
+        handleChangeStatus,
+    } = useChangeStatus();
     useEffect(() => {
         const fetchTodos = async () => {
             setFetchingrror('');
             setIsLoading(true);
-            console.log("Fetching Users for user:", userId, "with status:", toFetchStatus, "user is:", userStatus);
             if (toFetchStatus == Status.Users) {
                 try {
                     const response = await fetch(`http://localhost:5144/api/login/users`, {
@@ -33,16 +37,17 @@ export const useFetchTodosByStatus = ({ userId, toFetchStatus, triggerUpdate, us
                     });
 
                     const data = await response.json();
-
                     if (!response.ok) {
                         setFetchingrror(data.message || 'Failed to fetch To-Dos');
-                    } else if (data.users || data.googleUsers) {
-                        setUsers([...data.users, ...data.googleUsers]);
+                        setUsers([]);
+                    }
+                    else if (response.ok) {
+                        setUsers([...data.users, ...data.googleUsers])
                     }
                 } catch (error) {
-                    setFetchingrror('Error fetching user information!'); // Gère les erreurs lors de la requête.
+                    setFetchingrror('Error fetching user information!');
                 } finally {
-                    setIsLoading(false); // Arrête l'indicateur de chargement.
+                    setIsLoading(false);
                 }
             }
             else {
@@ -50,9 +55,8 @@ export const useFetchTodosByStatus = ({ userId, toFetchStatus, triggerUpdate, us
                     var endpoint = 'http://localhost:5144/api/todo/todos';
 
                     const requestBody = {
-                        UserId: String(userId),
-                        Status: toFetchStatus !== undefined ? toFetchStatus : null,
-                        UserStatus: userStatus
+                        UserId: userId,
+                        Status: toFetchStatus !== undefined ? toFetchStatus : undefined,
                     };
 
 
@@ -62,43 +66,51 @@ export const useFetchTodosByStatus = ({ userId, toFetchStatus, triggerUpdate, us
                         body: JSON.stringify(requestBody),
                     });
 
-                    const data = await response.json(); // Lire le corps de la réponse une seule fois
+                    const data = await response.json();
 
                     if (!response.ok) {
 
-                        setAllTodos([]);
                         setUsersTodos([]);
                         setFetchingrror(data.message || 'Failed to fetch To-Dos');
-                    } else if (data.todos || data.usersTodos) {
-
-
-                        setAllTodos(data.todos)
+                    }
+                    else if (response.ok && data.usersTodos.length > 0) {
                         setUsersTodos(data.usersTodos);
-                        setFetchingrror(null);
+                        if (toFetchStatus == undefined || toFetchStatus == Status.Upcoming) {
+                            usersTodos.forEach(todo => {
+                                if (new Date(todo.deadline) < new Date(Date.now())) {
+                                    todo.status == Status.Expired
+                                    handleChangeStatus(todo, Status.Expired)
+                                }
+                            });
+                            triggerUpdate = true;
+                            setFetchingrror(null);
+                            setUsersTotalTodos(data.usersTotalTodos)
+                            setTimeout(() => {
+                                triggerUpdate = false;
+                            }, 1000);
+                        }
 
                     }
 
                     else {
 
-
-                        setFetchingrror(`No ${requestBody.Status} To-Dos found.`);
-
+                        setUsersTodos([]);
+                        setFetchingrror(`No ${requestBody.Status == undefined ? "Upcoming" : Status[requestBody.Status]} To-Dos found.`);
+                        setUsersTotalTodos(data.usersTotalTodos)
                     }
                 } catch (err) {
                     setFetchingrror((err as Error).message);
                 } finally {
 
-                    setIsLoading(false); // Fin du chargement
+                    setIsLoading(false);
                 }
             }
-
-
         };
 
         if (userId) {
             fetchTodos();
         }
-    }, [toFetchStatus, triggerUpdate]); // Assurez-vous que toFetchStatus est dans le tableau des dépendances
+    }, [toFetchStatus, triggerUpdate]);
 
-    return { usersTodos, Fetchingrror, users, allTodos };
+    return { usersTodos, Fetchingrror, users, isLoading, usersTotalTodos };
 };  

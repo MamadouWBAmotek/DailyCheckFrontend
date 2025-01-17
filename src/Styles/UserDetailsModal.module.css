@@ -14,34 +14,24 @@
     padding: 20px;
     border-radius: 12px;
     background-color: #F0F0F5;
-    width: 400px;
-    /* Largeur fixe pour le modal */
+    width: 700px;
     display: flex;
     flex-direction: column;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    /* Ombre du modal */
 }
 
 .modal-content input,
+textarea,
 select {
     background-color: #F0F0F5;
-    margin-top: 15px;
-    /* Espacement entre les champs */
+    margin-bottom: 15px;
     padding: 12px;
     border-radius: 8px;
     border: 1px solid #bdc3c7;
-    /* Bordure gris clair */
     transition: border-color 0.3s ease;
     width: 100%;
-    /* Prend toute la largeur */
 }
 
-.modal-content input:focus {
-    border-color: #34495E;
-    /* Couleur de bordure au focus */
-    outline: none;
-    /* Supprime l'outline par défaut */
-}
 
 .modal-content button {
     margin-top: 15px;
@@ -54,25 +44,12 @@ select {
     /* margin:15px 40%; */
 }
 
-.modal-content button:hover {
-    background-color: #34495E;
-    transform: scale(1.05);
-
-    /* Couleur du bouton au hover */
-}
-
 .close {
     font-size: 24px;
     cursor: pointer;
-}
-
-.close:hover {
-    font-size: 30px;
+    display: flex;
+    align-self: flex-end;
     color: red;
-}
-
-.button-container button {
-    width: 80px;
 }
 
 .button-container {
@@ -80,32 +57,25 @@ select {
     justify-content: space-between;
 }
 
-.button-container button:hover {
-    transform: scale(1.2);
-    /* Zoom à 1.5 lors du survol */
+.button-container .save:hover {
+    border: 1px solid green;
+    border-radius: 5px;
 }
 
-.button-container .save:hover {
-    background-color: #27ae60;
-    /* Couleur au survol pour le bouton Save */
-}
 
 .button-container .cancel:hover {
-    background-color: #ffa07a;
-    /* Couleur au survol pour le bouton Cancel */
+    border: 1px solid orange;
+    border-radius: 5px;
 }
 
 .button-container .edit:hover {
     background-color: #5B7F93;
-    /* Couleur au survol pour le bouton Edit */
 }
 
 .button-container .delete:hover {
     background-color: #D94E4B;
-    /* Couleur au survol pour le bouton Delete */
 }
 
 .button-container .done:hover {
     background-color: #27ae60;
-    /* Couleur au survol pour le bouton Done */
 }

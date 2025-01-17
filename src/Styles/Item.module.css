@@ -1,0 +1,76 @@
+.delete {
+    color: #C62828;
+
+}
+
+.edit {
+    color: #2D9CDB;
+}
+
+.todoitem-content {
+    height: 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 25px;
+}
+
+.todoitem-expired {
+    height: 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 25px;
+
+}
+
+.todo-itemli {
+    display: flex;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 46%;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin: 20px 20px;
+    padding: 10px;
+    min-height: 200px;
+    border: #795757 solid 2px;
+}
+
+.todo-itemli-whilealmostexpired {
+    display: flex;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 46%;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin: 20px 20px;
+    padding: 10px;
+    min-height: 200px;
+    border: orange solid 2px;
+}
+
+.todo-itemli:hover {
+    background-color: #e4e4eb;
+    transform: scale(1.01);
+}
+
+.todo-itemli:hover .todo-item {
+    background-color: #E1E8F0;
+
+}
+
+@media screen and (max-width: 768px) {
+    .todo-itemli {
+
+        width: 100%;
+
+    }
+
+    .todo-itemli-whilealmostexpired {
+
+        width: 100%;
+
+    }
+
+}

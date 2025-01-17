@@ -25,7 +25,7 @@ export const registerUser = async (
 ): Promise<RegisterUserResponse> => {
     // Vérifier si les mots de passe correspondent
     if (password !== confirmPassword) {
-        return { error: "Les mots de passe ne correspondent pas." };
+        return { error: "Passwords do not match!" };
     }
 
     const model: RegistrationViewModel & Partial<{ Role: Role }> = {

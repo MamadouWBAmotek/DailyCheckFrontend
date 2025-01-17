@@ -1,7 +1,6 @@
 import React, { useState, createContext, useContext, useEffect } from 'react';
 import Cookies from 'js-cookie'; // Import js-cookie
 import { User } from './User';
-import { GoogleUser } from './GoogleUser';
 
 // Definition of the interface for the authentication context
 interface AuthContextType {

@@ -18,7 +18,6 @@ function RootComponent() {
 
   return (
     <>
-      {/* Masquer la navbar sur les pages de login et registration */}
       {(
         <div className="p-2 flex gap-2 text-lg">
           <Link
